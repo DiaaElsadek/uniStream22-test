@@ -19,25 +19,19 @@ async function saveData(
     fullName: string,
     userToken: string,
 ) {
-    const res = await fetch(
-        "https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/AppUser",
-        {
-            method: "POST",
-            headers: {
-                "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-                "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                AcademicId: academicId,
-                email: email,
-                password: password,
-                Role: "user",
-                fullName: fullName,
-                userToken: userToken,
-            }),
-        }
-    );
+    const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            academicId,
+            email,
+            password,
+            fullName,
+            userToken,
+        }),
+    });
+    const data = await res.json();
+
     if (res.ok) {
         // alert("All is Okay");
         return true;
@@ -48,128 +42,27 @@ async function saveData(
     }
 }
 
-async function handelSignup(academicId: string,
+async function handelSignup(
+    academicId: string,
     email: string,
     password: string,
-    fullName: string): Promise<SignupResponse> {
+    fullName: string
+): Promise<SignupResponse> {
+    try {
+        const res = await fetch("/api/auth/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ academicId, email, password, fullName }),
+        });
 
-    // افترض body عندك فيه الـ email اللي عايز تجيب البيانات بتاعته
-
-    const query = `?AcademicId=eq.${academicId}`; // مثال فلترة حسب الايميل
-    const url = `https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/AppUser${query}`;
-
-    const res = await fetch(url, {
-        method: "GET",
-        headers: {
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-            "Content-Type": "application/json",
-        },
-    });
-
-    // استلام الداتا في متغير
-    const data = await res.json();
-
-    const academicIdError = {
-        message: "This Acadimic ID is Already Registered.",
-        status: false,
-        type: "academicId"
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error("handelSignup error:", err);
+        return { message: "Unexpected error", status: false, type: "error" };
     }
-
-    console.log(data);
-
-    if (data[0]?.AcademicId !== "" && data.length > 0) {
-        // alert("This Academic ID is already registered.");
-        return academicIdError;
-    }
-
-    const queryEmail = `?email=eq.${email}`; // مثال فلترة حسب الايميل
-    const urlEmail = `https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/AppUser${queryEmail}`;
-
-    const resEmail = await fetch(urlEmail, {
-        method: "GET",
-        headers: {
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-            "Content-Type": "application/json",
-        },
-    });
-
-    const emailError = {
-        message: "This Email is Already Registered.",
-        status: false,
-        type: "email"
-    }
-
-    const dataEmail = await resEmail.json();
-
-    console.log(dataEmail);
-
-
-    if (dataEmail[0]?.email !== "" && dataEmail.length > 0) {
-        // alert("This Email is already registered.");
-        return emailError;
-    }
-
-    localStorage.setItem("academicId", academicId);
-
-    // Handler OTP
-    // const otp = Math.floor(100000 + Math.random() * 900000); // Generate 6-digit
-    // const leftotp = Math.floor(100000 + Math.random() * 900000);
-    // const rightotp = Math.floor(100000 + Math.random() * 900000);
-
-    // تحديد الرابط الأساسي (محلي أو على Vercel)
-    // const baseUrl =
-    //     typeof window === "undefined"
-    //         ? process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-    //         : window.location.origin;
-
-    // const resOTP = await fetch(`${baseUrl}/api/handelerotp`, {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ email, otp, academicId }),
-    // });
-
-    const successMessage = {
-        message: "Registered Successfully",
-        status: true,
-        type: "All is Okay",
-    };
-
-    // let dataOTP;
-    // try {
-    //     dataOTP = await resOTP.json();
-    // } catch {
-    //     dataOTP = { success: false, message: `Server returned status ${resOTP.status}` };
-    // }
-
-    // console.log("Data OTP:", dataOTP);
-
-    // if (!dataOTP.success) {
-    //     return {
-    //         message: "Failed to send OTP. Please try again.",
-    //         status: false,
-    //         type: "OTP",
-    //     };
-    // } else {
-    //     if (typeof window !== "undefined") {
-    //         localStorage.setItem("id", leftotp.toString() + otp.toString() + rightotp.toString());
-    //         localStorage.setItem("email", email);
-    //         localStorage.setItem("academicId", academicId);
-    //         localStorage.setItem("fullName", fullName);
-    //         localStorage.setItem("password", password);
-    //     }
-    //     return successMessage;
-    // }
-
-    // localStorage.setItem("id", leftotp.toString() + otp.toString() + rightotp.toString());
-    localStorage.setItem("email", email);
-    localStorage.setItem("academicId", academicId);
-    localStorage.setItem("fullName", fullName);
-    localStorage.setItem("password", password);
-    return successMessage;
-
 }
+
 
 export default function SignupPage() {
     const [academicId, setAcademicId] = useState("");
@@ -378,12 +271,12 @@ export default function SignupPage() {
     // Hot Reload
     useEffect(() => {
         const hasReloaded = sessionStorage.getItem("hasReloadedSignup");
-    
+
         if (!hasReloaded) {
-          sessionStorage.setItem("hasReloadedSignup", "true");
-          window.location.reload();
+            sessionStorage.setItem("hasReloadedSignup", "true");
+            window.location.reload();
         }
-      }, []);
+    }, []);
 
     // console.log("Keys:", process.env.MAILJET_API_KEY, process.env.MAILJET_SECRET_KEY);
     // console.log("Keys:", process.env.MAILJET_API_KEY!, process.env.MAILJET_SECRET_KEY!);
@@ -530,7 +423,7 @@ export default function SignupPage() {
 
                 <div className="mt-6 text-center text-gray-300 relative z-10">
                     Already have an account?{" "}
-                    <Link href={'/login'} onClick={ () => {
+                    <Link href={'/login'} onClick={() => {
                         sessionStorage.setItem("hasReloadedSignup", "false");
                         sessionStorage.setItem("hasReloadedLogin", "false");
                     }} className="text-indigo-400 font-semibold hover:underline">
