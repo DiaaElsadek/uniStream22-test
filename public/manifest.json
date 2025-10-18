@@ -1,0 +1,23 @@
+{
+    "name": "UniStream22 HTI",
+    "short_name": "UniStream22 HTI",
+    "start_url": "/home",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#1e293b",
+    "description": "UniStream22 Continue and View The Last News",
+    "icons": [
+        {
+            "src": "/icons/uniStream22.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/uniStream22.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
