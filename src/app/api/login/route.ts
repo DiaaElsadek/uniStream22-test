@@ -1,76 +1,74 @@
-// Server Component
-import { NextResponse } from "next/server";
+// server-side route: app/api/login/route.ts
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+const SUPA_URL = process.env.SUPABASE_URL!;
+const SUPA_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
-
-    if (!email || !password) {
-      return NextResponse.json(
-        { message: "Email and password are required.", status: false },
-        { status: 400 }
-      );
+    if (!SUPA_URL || !SUPA_SERVICE_KEY) {
+      console.error("Missing Supabase env vars");
+      return NextResponse.json({ message: "Server configuration error", status: false, type: "server" }, { status: 500 });
     }
 
-    const SUPABASE_URL = process.env.SUPABASE_URL!;
-    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const body = await req.json();
+    const email = (body.email || "").toString().trim();
+    const password = (body.password || "").toString();
 
-    // بنجيب اليوزر من Supabase بناءً على الإيميل
-    const encodedEmail = encodeURIComponent(email);
-    const url = `${SUPABASE_URL}/rest/v1/AppUser?email=eq.${encodedEmail}`;
+    if (!email || !password) {
+      return NextResponse.json({ message: "Email and password are required.", status: false, type: "validation" }, { status: 400 });
+    }
 
-    const res = await fetch(url, {
+    // fetch user by email
+    const resUser = await fetch(`${SUPA_URL}/rest/v1/AppUser?email=eq.${encodeURIComponent(email)}`, {
       method: "GET",
       headers: {
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": "application/json",
+        apikey: SUPA_SERVICE_KEY,
+        Authorization: `Bearer ${SUPA_SERVICE_KEY}`,
       },
     });
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { message: "Error connecting to database.", status: false },
-        { status: 500 }
-      );
+    if (!resUser.ok) {
+      const txt = await resUser.text();
+      console.error("Supabase lookup failed:", resUser.status, txt);
+      return NextResponse.json({ message: "Failed to lookup user.", status: false, type: "server" }, { status: 500 });
     }
 
-    const data = await res.json();
+    const users = await resUser.json();
 
-    if (!Array.isArray(data) || data.length === 0) {
-      return NextResponse.json(
-        { message: "User not found.", status: false, type: "not_found" },
-        { status: 404 }
-      );
+    if (!Array.isArray(users) || users.length === 0) {
+      return NextResponse.json({ message: "Invalid credentials.", status: false, type: "credentials" }, { status: 401 });
     }
 
-    const user = data[0];
+    const user = users[0];
 
-    if (password === user.password) {
-      // تسجيل الدخول ناجح
-      return NextResponse.json({
-        message: "Login successful.",
-        status: true,
-        type: "success",
-        user: {
-          academicId: user?.AcademicId ?? "",
-          email: user?.email ?? "",
-          fullName: user?.fullName ?? "",
-          userToken: user?.userToken ?? "",
-          role: user?.role ?? "",
-        },
-      });
-    } else {
-      return NextResponse.json(
-        { message: "Invalid email or password.", status: false, type: "credentials" },
-        { status: 401 }
-      );
+    // NOTE: this example compares plain-text passwords.
+    // In production you MUST hash passwords (bcrypt) and compare hashes.
+    if (user.password !== password) {
+      return NextResponse.json({ message: "Invalid credentials.", status: false, type: "credentials" }, { status: 401 });
     }
-  } catch (error) {
-    console.error("Login error:", error);
-    return NextResponse.json(
-      { message: "Unexpected server error.", status: false },
-      { status: 500 }
-    );
+
+    // create a basic token (for demo). Replace with JWT or real session in production.
+    const payload = {
+      academicId: user.AcademicId ?? user.academicId ?? "",
+      email: user.email,
+      fullName: user.fullName ?? "",
+      ts: Date.now(),
+    };
+    const userToken = Buffer.from(JSON.stringify(payload)).toString("base64");
+
+    // return user info (avoid returning sensitive fields)
+    const responseUser = {
+      academicId: user.AcademicId ?? user.academicId ?? "",
+      email: user.email,
+      fullName: user.fullName ?? "",
+      userToken,
+      role: user.role ?? "user",
+    };
+
+    return NextResponse.json({ message: "Logged in", status: true, type: "success", user: responseUser }, { status: 200 });
+  } catch (err) {
+    console.error("Login error:", err);
+    return NextResponse.json({ message: "Internal server error.", status: false, type: "server" }, { status: 500 });
   }
 }

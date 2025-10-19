@@ -26,8 +26,15 @@ async function handelLogin(email: string, password: string): Promise<LoginRespon
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await res.json();
-    return data;
+    // try parse json, but handle non-json gracefully
+    const text = await res.text();
+    try {
+      const data = JSON.parse(text);
+      return data as LoginResponse;
+    } catch {
+      console.error("handelLogin: server returned non-json:", text);
+      return { message: "Server error", status: false };
+    }
   } catch (err) {
     console.error("handelLogin error:", err);
     return { message: "Unexpected error", status: false };
@@ -77,6 +84,7 @@ export default function LoginPage() {
       const res = await handelLogin(email.trim(), password);
 
       if (res.status && res.user) {
+        // persist minimal safe info
         localStorage.setItem("savedEmail", email.trim());
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("academicId", res.user.academicId);
@@ -84,8 +92,10 @@ export default function LoginPage() {
         localStorage.setItem("fullName", res.user.fullName);
         localStorage.setItem("userToken", res.user.userToken);
 
-        document.cookie = `role=${encodeURIComponent(res.user.role)}; path=/;`;
+        // store role as cookie (example)
+        document.cookie = `role=${encodeURIComponent(res.user.role)}; path=/; Secure; SameSite=Lax`;
 
+        // notify and redirect
         alert("Logged in successfully!");
         sessionStorage.setItem("hasReloadedSignup", "false");
         sessionStorage.setItem("hasReloadedLogin", "false");
@@ -101,11 +111,12 @@ export default function LoginPage() {
     }
   };
 
+  // optional: remove forced reload behaviour used earlier for signup
   useEffect(() => {
     const hasReloaded = sessionStorage.getItem("hasReloadedLogin");
     if (!hasReloaded) {
       sessionStorage.setItem("hasReloadedLogin", "true");
-      window.location.reload();
+      // removed window.location.reload() to avoid interrupting navigation
     }
   }, []);
 
