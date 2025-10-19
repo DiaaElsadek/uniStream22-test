@@ -1,4 +1,4 @@
-// app/api/auth/checkUser/route.ts
+// src/app/api/auth/checkUser/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
 const SUPA_URL = process.env.SUPABASE_URL!;

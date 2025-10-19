@@ -1,46 +1,15 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import './style.css';
-import '@fortawesome/fontawesome-free/css/all.min.css';
+import "./style.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { NextRequest, NextResponse } from "next/server";
 
 type SignupResponse = {
     message: string;
     status: boolean;
     type: string;
 };
-
-async function saveData(
-    academicId: string,
-    email: string,
-    password: string,
-    fullName: string,
-    userToken: string,
-) {
-    const res = await fetch("/api/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            academicId,
-            email,
-            password,
-            fullName,
-            userToken,
-        }),
-    });
-    const data = await res.json();
-
-    if (res.ok) {
-        // alert("All is Okay");
-        return true;
-    } else {
-        console.error("SaveData failed:", await res.text());
-        // alert("All is Not Okay");
-        return false;
-    }
-}
 
 async function handelSignup(
     academicId: string,
@@ -49,7 +18,7 @@ async function handelSignup(
     fullName: string
 ): Promise<SignupResponse> {
     try {
-        const res = await fetch("/api/auth/signup", {
+        const res = await fetch("/api/signup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ academicId, email, password, fullName }),
@@ -63,27 +32,66 @@ async function handelSignup(
     }
 }
 
-
 export default function SignupPage() {
     const [academicId, setAcademicId] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const router = useRouter();
-
-
-    // Name Validation
-    // داخل الـ SignupPage component، قبل الأكاديمك والاميل والباسورد
     const [fullName, setFullName] = useState("");
     const [fullNameError, setFullNameError] = useState<string | null>(null);
+    const router = useRouter();
 
-    // handler للـ full name
+    // validation state
+    const [academicError, setAcademicError] = useState<string | null>(null);
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+
+    // password rules state
+    const [pwLenOk, setPwLenOk] = useState(false);
+    const [pwUpperOk, setPwUpperOk] = useState(false);
+    const [pwLowerOk, setPwLowerOk] = useState(false);
+    const [pwDigitOk, setPwDigitOk] = useState(false);
+    const [pwSpecialOk, setPwSpecialOk] = useState(false);
+
+    // helpers
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const academicRegex = /^4202[0123456]\d{3}$/;
+    const onlyDigitsRegex = /^\d*$/;
+    const upperRegex = /[A-Z]/;
+    const lowerRegex = /[a-z]/;
+    const digitRegex = /[0-9]/;
+    const specialRegex = /[!@#$%^&*(),.?":{}|<>]/;
+
+    // live validate password
+    useEffect(() => {
+        setPwLenOk(password.length >= 8);
+        setPwUpperOk(upperRegex.test(password));
+        setPwLowerOk(lowerRegex.test(password));
+        setPwDigitOk(digitRegex.test(password));
+        setPwSpecialOk(specialRegex.test(password));
+
+        if (password.length === 0) {
+            setPasswordError(null);
+        } else if (
+            pwLenOk &&
+            pwUpperOk &&
+            pwLowerOk &&
+            pwDigitOk &&
+            pwSpecialOk
+        ) {
+            setPasswordError(null);
+        } else {
+            setPasswordError("Password does not meet all requirements.");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [password, pwLenOk, pwUpperOk, pwLowerOk, pwDigitOk, pwSpecialOk]);
+
+    // full name validation
     const onFullNameChange = (value: string) => {
-        if (value.length > 20) return; // لا يزيد عن 20 حرف
+        if (value.length > 20) return;
         setFullName(value);
 
-        // live validation message
         if (value.length === 0) {
             setFullNameError("Full Name is required.");
         } else {
@@ -99,56 +107,12 @@ export default function SignupPage() {
         }
     };
 
-
-    // validation state
-    const [academicError, setAcademicError] = useState<string | null>(null);
-    const [emailError, setEmailError] = useState<string | null>(null);
-    const [passwordError, setPasswordError] = useState<string | null>(null);
-
-    // password rules state
-    const [pwLenOk, setPwLenOk] = useState(false);
-    const [pwUpperOk, setPwUpperOk] = useState(false);
-    const [pwLowerOk, setPwLowerOk] = useState(false);
-    const [pwDigitOk, setPwDigitOk] = useState(false);
-    const [pwSpecialOk, setPwSpecialOk] = useState(false);
-
-    // helpers: regex
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const academicRegex = /^4202[0123456]\d{3}$/; // starts with 4202 then 4 digits (total 8 digits)
-    const onlyDigitsRegex = /^\d*$/;
-    const upperRegex = /[A-Z]/;
-    const lowerRegex = /[a-z]/;
-    const digitRegex = /[0-9]/;
-    const specialRegex = /[!@#$%^&*(),.?":{}|<>]/;
-
-    // live validate password rules
-    useEffect(() => {
-        setPwLenOk(password.length >= 8);
-        setPwUpperOk(upperRegex.test(password));
-        setPwLowerOk(lowerRegex.test(password));
-        setPwDigitOk(digitRegex.test(password));
-        setPwSpecialOk(specialRegex.test(password));
-
-        // overall password error (one-line message)
-        if (password.length === 0) {
-            setPasswordError(null);
-        } else if (pwLenOk && pwUpperOk && pwLowerOk && pwDigitOk && pwSpecialOk) {
-            setPasswordError(null);
-        } else {
-            setPasswordError("Password does not meet all requirements.");
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [password, pwLenOk, pwUpperOk, pwLowerOk, pwDigitOk, pwSpecialOk]);
-
-    // academicId validation on change (force numeric only)
+    // academic id validation
     const onAcademicChange = (value: string) => {
-        // allow only digits while typing
         if (!onlyDigitsRegex.test(value)) return;
-        // limit to 8 chars
         if (value.length > 8) return;
         setAcademicId(value);
 
-        // live validation message
         if (value.length === 0) {
             setAcademicError(null);
         } else if (!onlyDigitsRegex.test(value)) {
@@ -196,7 +160,6 @@ export default function SignupPage() {
         }
     };
 
-    // decide if form valid
     const formValid =
         academicRegex.test(academicId) &&
         emailRegex.test(email) &&
@@ -208,78 +171,36 @@ export default function SignupPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // final pre-check
+
         if (!formValid) {
-            // show inline messages if something missing
-            if (!academicRegex.test(academicId)) setAcademicError("Academic ID must be 8 digits and start with 4202.");
-            if (!emailRegex.test(email)) setEmailError("Invalid email format.");
-            if (!(pwLenOk && pwUpperOk && pwLowerOk && pwDigitOk && pwSpecialOk)) setPasswordError("Password does not meet all requirements.");
+            if (!academicRegex.test(academicId))
+                setAcademicError("Academic ID must be 8 digits and start with 4202.");
+            if (!emailRegex.test(email))
+                setEmailError("Invalid email format.");
+            if (!(pwLenOk && pwUpperOk && pwLowerOk && pwDigitOk && pwSpecialOk))
+                setPasswordError("Password does not meet all requirements.");
             return;
         }
 
         setLoading(true);
-
         try {
-
-            const isOkay = await handelSignup(academicId, email, password, fullName); // userToken not used now
-
-            // call your server-side API route (recommended) to avoid CORS and hide keys
-            // const res = await fetch("/api/signup", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify({ academicId, email, password }),
-            // });
-
-            if (isOkay.status) {
-                // if ok -> simulate token or use returned token if API gives one
-                let token = "";
-                if (!token) {
-                    token = `token-${btoa(JSON.stringify({ academicId, email, ts: Date.now() }))}`;
-                }
-                localStorage.setItem("userToken", token);
-                // success UX
-                // alert("Signed up successfully!");
-                // academicId = localStorage.getItem("academicId");
-                // email = localStorage.getItem("email");
-                const fullName = localStorage.getItem("fullName");
-                const userToken = localStorage.getItem("userToken");
-                const password = localStorage.getItem("password");
-                const res = await saveData(academicId, email, password ?? "", fullName ?? "", userToken ?? "");
-                if (res) {
-                    sessionStorage.setItem("hasReloadedSignup", "false");
-                    sessionStorage.setItem("hasReloadedLogin", "false");
-                    router.push("/selectschedule");
-                }
-                else {
-                    console.log("try again");
-                }
+            const result = await handelSignup(academicId, email, password, fullName);
+            console.log(result);
+            if (result.status) {
+                localStorage.setItem("academicId", academicId);
+                localStorage.setItem("email", email);
+                localStorage.setItem("fullName", fullName);
+                setTimeout(() => router.push("/selectschedule"), 300);
+            } else {
+                if (result.type === "academicId") setAcademicError(result.message);
+                else if (result.type === "email") setEmailError(result.message);
             }
-            else {
-                if (isOkay.type === "academicId") {
-                    setAcademicError(isOkay.message);
-                }
-                else if (isOkay.type === "email") {
-                    setEmailError(isOkay.message);
-                }
-            }
-        }
-        finally {
+        } finally {
             setLoading(false);
         }
     };
 
-    // Hot Reload
-    useEffect(() => {
-        const hasReloaded = sessionStorage.getItem("hasReloadedSignup");
-
-        if (!hasReloaded) {
-            sessionStorage.setItem("hasReloadedSignup", "true");
-            window.location.reload();
-        }
-    }, []);
-
-    // console.log("Keys:", process.env.MAILJET_API_KEY, process.env.MAILJET_SECRET_KEY);
-    // console.log("Keys:", process.env.MAILJET_API_KEY!, process.env.MAILJET_SECRET_KEY!);
+    console.log({ academicId, email, password, fullName, formValid });
 
     return (
         <div className="login-bg min-h-screen flex items-center justify-center px-4">
@@ -295,11 +216,18 @@ export default function SignupPage() {
 
                 <div className="gradient-border mb-4"></div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 relative z-10" noValidate
-                    autoComplete="on" >
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-6 relative z-10"
+                    noValidate
+                    autoComplete="on"
+                >
                     {/* Full Name */}
                     <div>
-                        <label htmlFor="fullName" className="block text-gray-200 font-medium mb-2">
+                        <label
+                            htmlFor="fullName"
+                            className="block text-gray-200 font-medium mb-2"
+                        >
                             Full Name
                         </label>
                         <input
@@ -309,16 +237,21 @@ export default function SignupPage() {
                             onChange={(e) => onFullNameChange(e.target.value)}
                             onBlur={onFullNameBlur}
                             required
-                            className={`w-full px-4 py-3 border rounded-xl border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition ${fullNameError ? "ring-2 ring-red-500" : ""}`}
+                            className={`w-full px-4 py-3 border rounded-xl border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition ${fullNameError ? "ring-2 ring-red-500" : ""
+                                }`}
                             placeholder="Enter your full name (max 20 chars)"
                         />
                         {fullNameError && (
                             <p className="mt-2 text-sm text-red-400">{fullNameError}</p>
                         )}
                     </div>
+
                     {/* Academic ID */}
                     <div>
-                        <label htmlFor="academicId" className="block text-gray-200 font-medium mb-2">
+                        <label
+                            htmlFor="academicId"
+                            className="block text-gray-200 font-medium mb-2"
+                        >
                             Academic ID
                         </label>
                         <input
@@ -331,19 +264,26 @@ export default function SignupPage() {
                             onChange={(e) => onAcademicChange(e.target.value)}
                             onBlur={onAcademicBlur}
                             required
-                            className={`w-full px-4 py-3 border rounded-xl border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition ${academicError ? "ring-2 ring-red-500" : ""}`}
+                            className={`w-full px-4 py-3 border rounded-xl border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition ${academicError ? "ring-2 ring-red-500" : ""
+                                }`}
                             placeholder="Enter your Academic ID (e.g. 4202XXXX)"
                         />
                         {academicError ? (
                             <p className="mt-2 text-sm text-red-400">{academicError}</p>
                         ) : (
-                            <p className="mt-2 text-sm text-gray-400">Must be 8 digits and start with <span className="font-semibold">4202</span>.</p>
+                            <p className="mt-2 text-sm text-gray-400">
+                                Must be 8 digits and start with{" "}
+                                <span className="font-semibold">4202</span>.
+                            </p>
                         )}
                     </div>
 
                     {/* Email */}
                     <div>
-                        <label htmlFor="email" className="block text-gray-200 font-medium mb-2">
+                        <label
+                            htmlFor="email"
+                            className="block text-gray-200 font-medium mb-2"
+                        >
                             Email Address
                         </label>
                         <input
@@ -353,13 +293,16 @@ export default function SignupPage() {
                             onChange={(e) => onEmailChange(e.target.value)}
                             onBlur={onEmailBlur}
                             required
-                            className={`w-full px-4 py-3 border rounded-xl border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition ${emailError ? "ring-2 ring-red-500" : ""}`}
+                            className={`w-full px-4 py-3 border rounded-xl border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition ${emailError ? "ring-2 ring-red-500" : ""
+                                }`}
                             placeholder="Enter your email"
                         />
                         {emailError ? (
                             <p className="mt-2 text-sm text-red-400">{emailError}</p>
                         ) : (
-                            <p className="mt-2 text-sm text-gray-400">We'll use this email for login & notifications.</p>
+                            <p className="mt-2 text-sm text-gray-400">
+                                We'll use this email for login & notifications.
+                            </p>
                         )}
                     </div>
 
@@ -404,7 +347,10 @@ export default function SignupPage() {
                             <RuleLine ok={pwUpperOk} text="At least one uppercase letter" />
                             <RuleLine ok={pwLowerOk} text="At least one lowercase letter" />
                             <RuleLine ok={pwDigitOk} text="At least one digit" />
-                            <RuleLine ok={pwSpecialOk} text="At least one special character (!@#$...)" />
+                            <RuleLine
+                                ok={pwSpecialOk}
+                                text="At least one special character (!@#$...)"
+                            />
                         </div>
 
                         {passwordError && (
@@ -415,7 +361,10 @@ export default function SignupPage() {
                     <button
                         type="submit"
                         disabled={loading || !formValid}
-                        className={`w-full py-3 ${loading || !formValid ? "bg-gray-600 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700 cursor-pointer"} text-white font-semibold rounded-xl shadow-md transition relative z-10`}
+                        className={`w-full py-3 ${loading || !formValid
+                            ? "bg-gray-600 cursor-not-allowed"
+                            : "bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
+                            } text-white font-semibold rounded-xl shadow-md transition relative z-10`}
                     >
                         {loading ? "Signing Up..." : "Sign Up"}
                     </button>
@@ -423,10 +372,14 @@ export default function SignupPage() {
 
                 <div className="mt-6 text-center text-gray-300 relative z-10">
                     Already have an account?{" "}
-                    <Link href={'/login'} onClick={() => {
-                        sessionStorage.setItem("hasReloadedSignup", "false");
-                        sessionStorage.setItem("hasReloadedLogin", "false");
-                    }} className="text-indigo-400 font-semibold hover:underline">
+                    <Link
+                        href={"/login"}
+                        onClick={() => {
+                            sessionStorage.setItem("hasReloadedSignup", "false");
+                            sessionStorage.setItem("hasReloadedLogin", "false");
+                        }}
+                        className="text-indigo-400 font-semibold hover:underline"
+                    >
                         Login Now
                     </Link>
                 </div>
@@ -435,14 +388,27 @@ export default function SignupPage() {
     );
 }
 
-/* small component to show rule with check */
 function RuleLine({ ok, text }: { ok: boolean; text: string }) {
     return (
         <div className="flex items-center gap-2">
-            <span className={`w-5 h-5 rounded-full flex items-center justify-center ${ok ? "bg-green-400 text-white" : "bg-gray-700 text-gray-400"}`}>
-                {ok ? <i className="fas fa-check text-xs"></i> : <i className="fas fa-minus text-xs"></i>}
+            <span
+                className={`w-5 h-5 rounded-full flex items-center justify-center ${ok
+                    ? "bg-green-400 text-white"
+                    : "bg-gray-700 text-gray-400"
+                    }`}
+            >
+                {ok ? (
+                    <i className="fas fa-check text-xs"></i>
+                ) : (
+                    <i className="fas fa-minus text-xs"></i>
+                )}
             </span>
-            <span className={`text-sm ${ok ? "text-gray-200" : "text-gray-400"}`}>{text}</span>
+            <span
+                className={`text-sm ${ok ? "text-gray-200" : "text-gray-400"
+                    }`}
+            >
+                {text}
+            </span>
         </div>
     );
 }

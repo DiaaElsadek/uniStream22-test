@@ -1,13 +1,19 @@
+"use server";
+
 import { NextRequest, NextResponse } from "next/server";
 
 const SUPA_URL = process.env.SUPABASE_URL!;
 const SUPA_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export async function POST(req: NextRequest) {
+  console.log("SUPA_URL:", SUPA_URL);
+  console.log("SUPA_SERVICE_KEY:", SUPA_SERVICE_KEY ? "Loaded ✅" : "Missing ❌");
+
   try {
     const { academicId, email, password, fullName } = await req.json();
+    console.log("Received:", academicId, email, password, fullName);
 
-    // تحقق من وجود نفس AcademicId
+    // 🔹 تحقق من وجود نفس AcademicId
     const resAcad = await fetch(`${SUPA_URL}/rest/v1/AppUser?AcademicId=eq.${academicId}`, {
       method: "GET",
       headers: {
@@ -17,14 +23,15 @@ export async function POST(req: NextRequest) {
     });
 
     const dataAcad = await resAcad.json();
-    if (dataAcad.length > 0) {
+
+    if (Array.isArray(dataAcad) && dataAcad.length > 0) {
       return NextResponse.json(
-        { message: "This Academic ID is Already Registered.", status: false, type: "academicId" },
+        { message: "This Academic ID is already registered.", status: false, type: "academicId" },
         { status: 400 }
       );
     }
 
-    // تحقق من وجود نفس الإيميل
+    // 🔹 تحقق من وجود نفس الإيميل
     const resEmail = await fetch(`${SUPA_URL}/rest/v1/AppUser?email=eq.${email}`, {
       method: "GET",
       headers: {
@@ -34,14 +41,15 @@ export async function POST(req: NextRequest) {
     });
 
     const dataEmail = await resEmail.json();
-    if (dataEmail.length > 0) {
+
+    if (Array.isArray(dataEmail) && dataEmail.length > 0) {
       return NextResponse.json(
-        { message: "This Email is Already Registered.", status: false, type: "email" },
+        { message: "This email is already registered.", status: false, type: "email" },
         { status: 400 }
       );
     }
 
-    // لو مافيش تعارض، ضيف المستخدم الجديد
+    // 🔹 لو مافيش تعارض، ضيف المستخدم الجديد
     const insertRes = await fetch(`${SUPA_URL}/rest/v1/AppUser`, {
       method: "POST",
       headers: {
@@ -50,25 +58,31 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
         Prefer: "return=representation",
       },
-      body: JSON.stringify({ academicId, email, password, fullName }),
+      body: JSON.stringify({ AcademicId: academicId, email, password, fullName }),
     });
 
     if (!insertRes.ok) {
-      const err = await insertRes.text();
-      return NextResponse.json({ message: err, status: false, type: "server" }, { status: 500 });
+      const errText = await insertRes.text();
+      console.error("Insert error:", errText);
+      return NextResponse.json(
+        { message: "Failed to register user.", status: false, type: "server" },
+        { status: 500 }
+      );
     }
 
     const user = await insertRes.json();
+
     return NextResponse.json({
-      message: "Registered Successfully",
+      message: "Registered successfully!",
       status: true,
       type: "success",
       user,
     });
+
   } catch (err) {
     console.error("Signup error:", err);
     return NextResponse.json(
-      { message: "Server error", status: false, type: "error" },
+      { message: "Internal server error.", status: false, type: "error" },
       { status: 500 }
     );
   }
