@@ -116,31 +116,401 @@ export default function AddNewsPage() {
 
     if (loading)
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-blue-950 flex justify-center items-center">
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-blue-950 flex justify-center items-center relative overflow-hidden">
+                {/* Animated Background Elements */}
+                <div className="absolute inset-0">
+                    {[...Array(20)].map((_, i) => (
+                        <motion.div
+                            key={i}
+                            animate={{
+                                y: [0, -100, 0],
+                                x: [0, Math.random() * 100 - 50, 0],
+                                opacity: [0, 0.8, 0],
+                                scale: [0, 1, 0],
+                            }}
+                            transition={{
+                                duration: 4 + Math.random() * 2,
+                                repeat: Infinity,
+                                delay: i * 0.3,
+                                ease: "easeInOut"
+                            }}
+                            className="absolute w-1 h-1 bg-indigo-400 rounded-full"
+                            style={{
+                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 100}%`,
+                            }}
+                        />
+                    ))}
+                </div>
+
+                {/* Floating Geometric Shapes */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-center"
+                    animate={{
+                        rotate: 360,
+                        y: [0, -20, 0],
+                    }}
+                    transition={{
+                        rotate: {
+                            duration: 8,
+                            repeat: Infinity,
+                            ease: "linear"
+                        },
+                        y: {
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }
+                    }}
+                    className="absolute top-1/4 left-1/4 w-8 h-8 border-2 border-purple-400/30 rounded-lg"
+                />
+                <motion.div
+                    animate={{
+                        rotate: -360,
+                        y: [0, 15, 0],
+                    }}
+                    transition={{
+                        rotate: {
+                            duration: 6,
+                            repeat: Infinity,
+                            ease: "linear"
+                        },
+                        y: {
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }
+                    }}
+                    className="absolute bottom-1/3 right-1/4 w-6 h-6 border-2 border-blue-400/30 rotate-45"
+                />
+
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8 }}
+                    className="text-center relative z-10"
                 >
+                    {/* Main News Icon Container */}
+                    <div className="relative mb-12">
+                        {/* Outer Glow */}
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.2, 1],
+                                opacity: [0.3, 0.6, 0.3],
+                            }}
+                            transition={{
+                                duration: 3,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                            className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full blur-xl"
+                        />
+
+                        {/* Animated News Icon */}
+                        <motion.div
+                            animate={{
+                                y: [0, -25, 0],
+                                rotate: [0, 10, -10, 0],
+                                scale: [1, 1.05, 1],
+                            }}
+                            transition={{
+                                duration: 4,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                            className="relative text-8xl mb-4"
+                        >
+                            <motion.span
+                                animate={{
+                                    filter: [
+                                        "drop-shadow(0 0 20px rgba(99, 102, 241, 0.5))",
+                                        "drop-shadow(0 0 30px rgba(168, 85, 247, 0.8))",
+                                        "drop-shadow(0 0 20px rgba(99, 102, 241, 0.5))"
+                                    ]
+                                }}
+                                transition={{
+                                    duration: 3,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                            >
+                                📰
+                            </motion.span>
+                        </motion.div>
+
+                        {/* Orbiting Elements */}
+                        {[...Array(6)].map((_, i) => (
+                            <motion.div
+                                key={i}
+                                animate={{
+                                    rotate: 360,
+                                    scale: [0.8, 1.2, 0.8],
+                                }}
+                                transition={{
+                                    rotate: {
+                                        duration: 4 + i,
+                                        repeat: Infinity,
+                                        ease: "linear"
+                                    },
+                                    scale: {
+                                        duration: 2,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                        delay: i * 0.2
+                                    }
+                                }}
+                                className="absolute w-4 h-4 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full"
+                                style={{
+                                    top: `${Math.cos((i * 60) * Math.PI / 180) * 80 + 50}%`,
+                                    left: `${Math.sin((i * 60) * Math.PI / 180) * 80 + 50}%`,
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Multi-layer Spinner */}
+                    <div className="relative mb-12">
+                        {/* Outer Ring */}
+                        <motion.div
+                            animate={{
+                                rotate: 360,
+                                scale: [1, 1.1, 1],
+                            }}
+                            transition={{
+                                rotate: {
+                                    duration: 4,
+                                    repeat: Infinity,
+                                    ease: "linear"
+                                },
+                                scale: {
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }
+                            }}
+                            className="w-32 h-32 border-4 border-indigo-400/30 border-t-indigo-400 border-r-purple-400 rounded-full mx-auto absolute inset-0"
+                        />
+
+                        {/* Middle Ring */}
+                        <motion.div
+                            animate={{
+                                rotate: -360,
+                                scale: [1, 1.05, 1],
+                            }}
+                            transition={{
+                                rotate: {
+                                    duration: 3,
+                                    repeat: Infinity,
+                                    ease: "linear"
+                                },
+                                scale: {
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }
+                            }}
+                            className="w-24 h-24 border-4 border-purple-400/40 border-t-purple-400 border-b-indigo-400 rounded-full mx-auto absolute inset-0 m-auto"
+                        />
+
+                        {/* Inner Core */}
+                        <motion.div
+                            animate={{
+                                rotate: 360,
+                                scale: [1, 1.2, 1],
+                                backgroundColor: ["rgba(99, 102, 241, 0.3)", "rgba(168, 85, 247, 0.5)", "rgba(99, 102, 241, 0.3)"],
+                            }}
+                            transition={{
+                                rotate: {
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "linear"
+                                },
+                                scale: {
+                                    duration: 1,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                },
+                                backgroundColor: {
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }
+                            }}
+                            className="w-16 h-16 bg-indigo-400/30 rounded-full mx-auto absolute inset-0 m-auto backdrop-blur-sm"
+                        >
+                            {/* Pulsing Dot */}
+                            <motion.div
+                                animate={{
+                                    scale: [0, 1, 0],
+                                    opacity: [0, 1, 0],
+                                }}
+                                transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                                className="w-3 h-3 bg-white rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                            />
+                        </motion.div>
+                    </div>
+
+                    {/* Text Content */}
+                    <div className="relative mb-8">
+                        {/* Main Title with Gradient Flow */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5, duration: 1 }}
+                            className="mb-6"
+                        >
+                            <motion.h1
+                                animate={{
+                                    backgroundPosition: ["0%", "100%", "0%"],
+                                }}
+                                transition={{
+                                    duration: 3,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                                className="text-5xl font-black bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent bg-[length:200%_auto] mb-4"
+                            >
+                                جاري تحميل الأخبار
+                            </motion.h1>
+
+                            {/* Animated Dots */}
+                            <motion.div className="flex justify-center space-x-2">
+                                {[...Array(3)].map((_, i) => (
+                                    <motion.span
+                                        key={i}
+                                        animate={{
+                                            opacity: [0, 1, 0],
+                                            y: [0, -10, 0],
+                                        }}
+                                        transition={{
+                                            duration: 1.5,
+                                            repeat: Infinity,
+                                            delay: i * 0.3,
+                                            ease: "easeInOut"
+                                        }}
+                                        className="text-2xl text-purple-300"
+                                    >
+                                        .
+                                    </motion.span>
+                                ))}
+                            </motion.div>
+                        </motion.div>
+
+                        {/* Subtitle with Typewriter Effect */}
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1, duration: 1 }}
+                            className="text-xl text-indigo-200/80 font-light mb-2"
+                        >
+                            يتم الآن تجهيز المحتوى
+                        </motion.p>
+
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.2, duration: 1 }}
+                            className="text-lg text-indigo-200/60 font-medium"
+                        >
+                            شكراً لصبرك
+                        </motion.p>
+                    </div>
+
+                    {/* Advanced Progress Indicator */}
+                    <div className="max-w-md mx-auto">
+                        {/* Progress Bar Container */}
+                        <div className="relative h-3 bg-gray-800/50 rounded-full overflow-hidden backdrop-blur-sm mb-4">
+                            {/* Animated Gradient Progress */}
+                            <motion.div
+                                animate={{
+                                    x: ["-100%", "100%"],
+                                }}
+                                transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent"
+                            />
+
+                            {/* Main Progress Bar */}
+                            <motion.div
+                                animate={{
+                                    width: ["0%", "100%", "0%"],
+                                }}
+                                transition={{
+                                    duration: 3,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                                className="h-full bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 rounded-full relative overflow-hidden"
+                            >
+                                {/* Shine Effect */}
+                                <motion.div
+                                    animate={{
+                                        x: ["-100%", "100%"],
+                                    }}
+                                    transition={{
+                                        duration: 1.5,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }}
+                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                                />
+                            </motion.div>
+                        </div>
+
+                        {/* Percentage Counter */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.5 }}
+                            className="text-sm text-indigo-300/70 font-mono"
+                        >
+                            <motion.span
+                                animate={{
+                                    textShadow: [
+                                        "0 0 0px rgba(99, 102, 241, 0)",
+                                        "0 0 10px rgba(99, 102, 241, 0.5)",
+                                        "0 0 0px rgba(99, 102, 241, 0)"
+                                    ]
+                                }}
+                                transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                            >
+                                جاري التحميل...
+                            </motion.span>
+                        </motion.div>
+                    </div>
+
+                    {/* Floating Info Cards */}
                     <motion.div
-                        animate={{
-                            rotate: 360,
-                            scale: [1, 1.1, 1]
-                        }}
-                        transition={{
-                            rotate: { duration: 2, repeat: Infinity, ease: "linear" },
-                            scale: { duration: 1.5, repeat: Infinity }
-                        }}
-                        className="w-20 h-20 border-4 border-indigo-400 border-t-transparent rounded-full mx-auto mb-6"
-                    ></motion.div>
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                        className="text-2xl font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 2 }}
+                        className="flex justify-center space-x-4 mt-8"
                     >
-                        جاري تحميل الأخبار...
-                    </motion.p>
+                        {[
+                            { icon: "⚡", text: "سريع", color: "text-yellow-400" },
+                            { icon: "🔄", text: "محدث", color: "text-green-400" },
+                            { icon: "🔒", text: "آمن", color: "text-blue-400" }
+                        ].map((item, index) => (
+                            <motion.div
+                                key={index}
+                                whileHover={{ scale: 1.1, y: -5 }}
+                                className="flex items-center space-x-2 px-4 py-2 bg-white/5 rounded-full backdrop-blur-sm border border-white/10"
+                            >
+                                <span className={`text-lg ${item.color}`}>{item.icon}</span>
+                                <span className="text-sm text-white/70">{item.text}</span>
+                            </motion.div>
+                        ))}
+                    </motion.div>
                 </motion.div>
             </div>
         );
@@ -198,52 +568,78 @@ export default function AddNewsPage() {
                             className="text-center lg:text-right"
                         >
                             <h1 className="text-5xl lg:text-6xl font-black bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent mb-4 leading-tight">
-                                إدارة الأخبار
+                                Dashboard
                             </h1>
                             <p className="text-lg text-indigo-200/80 font-medium">
-                                أضف وادر أخبار المواد الدراسية والمجموعات
+                                For Admins, Get Start and Add the News
                             </p>
                         </motion.div>
 
-                        <motion.button
-                            whileHover={{
-                                scale: 1.05,
-                                boxShadow: "0 20px 40px rgba(139, 92, 246, 0.3)"
-                            }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => {
-                                setShowModal(true);
-                                setIsEdit(false);
-                                setFormData({
-                                    title: "",
-                                    content: "",
-                                    subjectId: 0,
-                                    groupId: 0,
-                                    week: 1,
-                                    publishData: false,
-                                    createdBy: "",
-                                });
-                            }}
-                            className="group relative bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-4 rounded-2xl font-bold text-lg backdrop-blur-xl border border-indigo-400/30 shadow-2xl shadow-indigo-500/25 transition-all duration-300"
-                        >
-                            <span className="flex items-center gap-3 text-white">
-                                <motion.span
-                                    animate={{ rotate: [0, 10, -10, 0] }}
-                                    transition={{ duration: 2, repeat: Infinity }}
-                                    className="text-xl"
-                                >
-                                    📰
-                                </motion.span>
-                                إضافة خبر جديد
-                                <motion.span
-                                    whileHover={{ rotate: 90 }}
-                                    className="text-2xl transition-transform duration-300"
-                                >
-                                    +
-                                </motion.span>
-                            </span>
-                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </motion.button>
+                        <div className="flex flex-col sm:flex-row gap-4 items-center">
+                            {/* Home Button */}
+                            <motion.button
+                                whileHover={{
+                                    scale: 1.05,
+                                    boxShadow: "0 20px 40px rgba(34, 197, 94, 0.3)"
+                                }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => router.back()}
+                                className="group relative bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 rounded-2xl font-bold text-lg backdrop-blur-xl border border-green-400/30 shadow-2xl shadow-green-500/25 transition-all duration-300"
+                            >
+                                <span className="flex items-center gap-3 text-white">
+                                    <motion.span
+                                        animate={{ rotate: [0, -10, 10, 0] }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                        className="text-xl"
+                                    >
+                                        🏠
+                                    </motion.span>
+                                    الصفحة الرئيسية
+                                </span>
+                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </motion.button>
+
+                            {/* Add News Button */}
+                            <motion.button
+                                whileHover={{
+                                    scale: 1.05,
+                                    boxShadow: "0 20px 40px rgba(139, 92, 246, 0.3)"
+                                }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => {
+                                    setShowModal(true);
+                                    setIsEdit(false);
+                                    setFormData({
+                                        title: "",
+                                        content: "",
+                                        subjectId: 0,
+                                        groupId: 0,
+                                        week: 1,
+                                        publishData: false,
+                                        createdBy: "",
+                                    });
+                                }}
+                                className="group relative bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-4 rounded-2xl font-bold text-lg backdrop-blur-xl border border-indigo-400/30 shadow-2xl shadow-indigo-500/25 transition-all duration-300"
+                            >
+                                <span className="flex items-center gap-3 text-white cursor-pointer">
+                                    <motion.span
+                                        animate={{ rotate: [0, 10, -10, 0] }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                        className="text-xl"
+                                    >
+                                        📰
+                                    </motion.span>
+                                    إضافة خبر جديد
+                                    <motion.span
+                                        whileHover={{ rotate: 90 }}
+                                        className="text-2xl transition-transform duration-300"
+                                    >
+                                        +
+                                    </motion.span>
+                                </span>
+                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </motion.button>
+                        </div>
                     </div>
 
                     {/* Search Section */}
@@ -329,11 +725,11 @@ export default function AddNewsPage() {
                                             </motion.span>
                                         </div>
 
-                                        <p
-                                            className="text-indigo-100/90 mb-6 leading-relaxed text-right pr-3 border-r-2 border-indigo-500/30 min-h-[80px] max-h-[300px] p-3 rounded-lg bg-white/5 backdrop-blur-sm resize overflow-auto"
-                                        >
-                                            {item.content}
-                                        </p>
+                                        <div className="mb-6 max-h-[120px] overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-500/30 scrollbar-track-indigo-500/10 rounded-lg bg-white/5 p-3 backdrop-blur-sm">
+                                            <p className="text-indigo-100/90 leading-relaxed text-right pr-3 border-r-2 border-indigo-500/30">
+                                                {item.content}
+                                            </p>
+                                        </div>
 
                                         {/* Metadata Grid */}
                                         <div className="grid grid-cols-1 gap-3 mb-6">
@@ -450,7 +846,6 @@ export default function AddNewsPage() {
                                 transition={{ delay: 0.2 }}
                                 className="space-y-6 text-right"
                             >
-                                {/* Form fields remain the same but with enhanced styling */}
                                 <div>
                                     <label className="block text-sm font-bold text-indigo-200 mb-3">عنوان الخبر</label>
                                     <input
@@ -488,7 +883,7 @@ export default function AddNewsPage() {
                                                     className="w-full p-4 bg-white/5 border border-indigo-500/30 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-300 text-white backdrop-blur-sm"
                                                 >
                                                     <option value={0}>عام (Global)</option>
-                                                    {field.options.map((option, idx) => (
+                                                    {field.options?.map((option, idx) => (
                                                         <option key={idx + 1} value={idx + 1}>
                                                             {option}
                                                         </option>
@@ -538,6 +933,21 @@ export default function AddNewsPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Custom Scrollbar Styles */}
+            <style jsx global>{`
+                .scrollbar-thin::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .scrollbar-thumb-indigo-500\/30::-webkit-scrollbar-thumb {
+                    background-color: rgba(99, 102, 241, 0.3);
+                    border-radius: 10px;
+                }
+                .scrollbar-track-indigo-500\/10::-webkit-scrollbar-track {
+                    background-color: rgba(99, 102, 241, 0.1);
+                    border-radius: 10px;
+                }
+            `}</style>
         </div>
     );
 }
