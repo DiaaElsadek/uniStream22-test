@@ -3,44 +3,14 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-const headers = {
-    apikey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-    Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-    "Content-Type": "application/json",
-}
-
-async function handelLogin(userToken: string): Promise<boolean> {
-    if (!userToken) return false;
-    const query = `?userToken=eq.${userToken}`;
-    const url = `https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/AppUser${query}`;
+async function checkUser(userToken: string) {
     try {
-        const res = await fetch(url, {
-            method: "GET",
-            headers: headers,
-        });
+        const res = await fetch(`/api/auth?userToken=${userToken}`);
         const data = await res.json();
-        return userToken === data[0]?.userToken;
+        if (!data.status) return null;
+        return data.user;
     } catch {
-        return false;
-    }
-}
-
-async function handelRole(userToken: string): Promise<boolean> {
-    if (!userToken) return false;
-    const query = `?userToken=eq.${userToken}`;
-    const url = `https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/AppUser${query}`;
-
-    try {
-        const res = await fetch(url, {
-            method: "GET",
-            headers: headers,
-        });
-        const data = await res.json();
-        console.log(data[0]);
-        console.log("Is Admin ? : ", "admin" === data[0]?.Role);
-        return "admin" === data[0]?.Role;
-    } catch {
-        return false;
+        return null;
     }
 }
 
@@ -50,28 +20,34 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     const [isLogged, setIsLogged] = useState(false);
 
     useEffect(() => {
-        const checkAuth = async () => {
+        const verifyUser = async () => {
             const userToken = localStorage.getItem("userToken");
             if (!userToken) return;
 
-            const loggedIn = await handelLogin(userToken);
+            const user = await checkUser(userToken);
+            const loggedIn = !!user;
             setIsLogged(loggedIn);
+            console.log(loggedIn);
 
-            // if (!loggedIn && !pathname.startsWith("/login") && !pathname.startsWith("/signup")) {
-            //     router.replace("/login");
-            // }
-
-            if ((pathname.startsWith("/dashboard") || pathname.startsWith("/dashboard/addnews")) &&
-                !(await handelRole(userToken))) {
-                router.replace("/home");
+            if (!loggedIn && !pathname.startsWith("/login") && !pathname.startsWith("/signup")) {
+                router.replace("/login");
+                return;
             }
 
+            // حماية المسارات الخاصة بالأدمن فقط
+            if ((pathname.startsWith("/dashboard") || pathname.startsWith("/dashboard/addnews")) &&
+                user?.Role !== "admin") {
+                router.replace("/home");
+                return;
+            }
+
+            // لو المستخدم بالفعل داخل، ميقدرش يدخل صفحة اللوجين أو التسجيل
             if ((pathname.startsWith("/login") || pathname.startsWith("/signup")) && loggedIn) {
                 router.replace("/home");
             }
         };
 
-        checkAuth();
+        verifyUser();
     }, [pathname]);
 
     return <>{children}</>;

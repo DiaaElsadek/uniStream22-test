@@ -19,7 +19,7 @@ async function handelSignup(
 ): Promise<SignupResponse> {
     try {
         // 🟢 توليد userToken فريد
-        const userToken = `Token-${academicId}${crypto.randomUUID()}`;
+        const userToken = `Token-${academicId}-${crypto.randomUUID()}`;
 
         const res = await fetch("/api/signup", {
             method: "POST",

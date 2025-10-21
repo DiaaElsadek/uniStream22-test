@@ -5,53 +5,15 @@ import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes, faSearch } from "@fortawesome/free-solid-svg-icons";
 
-const API_URL = "https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/News";
-const HEADERS = {
-    apikey:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-    Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-    "Content-Type": "application/json",
+type NewsItem = {
+    id: number;
+    title: string;
+    content: string;
+    createdAt: string;
+    subjectId: number;
+    groupId: number;
+    week: number;
 };
-
-async function handelRole(userToken: string | null): Promise<boolean> {
-    if (!userToken) return false;
-    const query = `?userToken=eq.${userToken}`;
-    const url = `https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/AppUser${query}`;
-    try {
-        const res = await fetch(url, { method: "GET", headers: HEADERS });
-        const data = await res.json();
-        return "admin" === data[0]?.Role;
-    } catch {
-        return false;
-    }
-}
-
-async function handelLogin(userToken: string | null): Promise<boolean> {
-    if (!userToken) return false;
-    const query = `?userToken=eq.${userToken}`;
-    const url = `https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/AppUser${query}`;
-    try {
-        const res = await fetch(url, { method: "GET", headers: HEADERS });
-        const data = await res.json();
-        return userToken === data[0]?.userToken;
-    } catch {
-        return false;
-    }
-}
-
-async function handelSubjects(userToken: string | null): Promise<number[]> {
-    if (!userToken) return [];
-    const query = `?userToken=eq.${userToken}`;
-    const url = `https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/AppUser${query}`;
-    try {
-        const res = await fetch(url, { method: "GET", headers: HEADERS });
-        const data = await res.json();
-        return data[0]?.subjectsId || [];
-    } catch {
-        return [];
-    }
-}
 
 export default function HomePage() {
     const subjects = [
@@ -80,39 +42,40 @@ export default function HomePage() {
         const init = async () => {
             setLoading(true);
             const token = localStorage.getItem("userToken");
-            const ok = await handelLogin(token);
-            const subj = await handelSubjects(token);
-            const role = await handelRole(token);
-            setIsAdmin(role);
-
-            if (!ok) {
+            if (!token) {
                 router.replace("/login");
-                setLoading(false);
                 return;
             }
 
-            if (!mounted) return;
-
-            setIsLoggedIn(true);
-            setSubjectsId(subj || []);
-
-            const cachedNews = localStorage.getItem("cachedNews");
-            if (cachedNews) {
-                setNews(JSON.parse(cachedNews));
-            }
-
             try {
-                const res = await fetch(API_URL, { headers: HEADERS });
+                const res = await fetch(`/api/home?userToken=${token}`);
                 const data = await res.json();
-                const sortedNews = Array.isArray(data)
-                    ? data
-                        .filter((n) => n && n.week !== undefined && n.week !== null)
-                        .sort((a, b) => b.week - a.week)
+
+                if (!data.status) {
+                    router.replace("/login");
+                    setLoading(false);
+                    return;
+                }
+
+                if (!mounted) return;
+
+                setIsLoggedIn(true);
+                setIsAdmin(data.user?.Role === "admin");
+                setSubjectsId(data.user?.subjectsId || []);
+
+                const allNews = Array.isArray(data.news)
+                    ? data.news
+                        .filter(
+                            (n: NewsItem) =>
+                                n && n.week !== undefined && n.week !== null
+                        )
+                        .sort((a: NewsItem, b: NewsItem) => b.week - a.week)
                     : [];
-                setNews(sortedNews);
-                localStorage.setItem("cachedNews", JSON.stringify(sortedNews));
+
+                setNews(allNews);
+                localStorage.setItem("cachedNews", JSON.stringify(allNews));
             } catch (err) {
-                console.error("Error fetching news:", err);
+                console.error("Error fetching data:", err);
             } finally {
                 setLoading(false);
             }
@@ -165,7 +128,6 @@ export default function HomePage() {
         };
     }, []);
 
-    // ✅ فلترة ذكية ومحسّنة
     const filteredNews = news.filter((item) => {
         const subjectName = subjects[item.subjectId - 1] || "Global";
         const group = item.groupId?.toString() || "";
@@ -202,7 +164,6 @@ export default function HomePage() {
 
     return (
         <div className="login-bg min-h-screen relative text-white">
-            {/* Navbar */}
             <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] md:w-[80%] z-50 
                     bg-gray-900/80 backdrop-blur-xl shadow-2xl rounded-2xl 
                     border border-gray-700/30 transition-all duration-300">
@@ -279,13 +240,11 @@ export default function HomePage() {
 
             <div className="h-20" />
 
-            {/* Content */}
             <main className="max-w-7xl mx-auto px-4 py-10 relative z-10">
                 <h2 className="text-3xl font-bold text-center mb-10 drop-shadow-md bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 bg-[length:200%_200%] animate-gradient-text text-transparent bg-clip-text">
                     Last News
                 </h2>
 
-                {/* ✅ Search Bar */}
                 <div className="relative mb-10 max-w-xl mx-auto">
                     <input
                         type="text"

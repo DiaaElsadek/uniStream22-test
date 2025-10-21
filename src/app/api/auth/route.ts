@@ -7,24 +7,35 @@ const SUPA_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 export async function GET(req: NextRequest) {
     try {
         const userToken = req.nextUrl.searchParams.get("userToken");
-        if (!userToken) return NextResponse.json({ status: false, message: "No token" }, { status: 400 });
+        if (!userToken) {
+            return NextResponse.json({ status: false, message: "Missing user token" }, { status: 400 });
+        }
 
         const res = await fetch(`${SUPA_URL}/rest/v1/AppUser?userToken=eq.${userToken}`, {
-            method: "GET",
             headers: {
                 apikey: SUPA_SERVICE_KEY,
                 Authorization: `Bearer ${SUPA_SERVICE_KEY}`,
-                "Content-Type": "application/json",
             },
         });
 
         const data = await res.json();
 
-        if (data.length === 0) return NextResponse.json({ status: false, message: "User not found" }, { status: 404 });
+        if (!Array.isArray(data) || data.length === 0) {
+            return NextResponse.json({ status: false, message: "User not found" }, { status: 404 });
+        }
 
-        return NextResponse.json({ status: true, user: data[0] });
-    } catch (err) {
-        console.error(err);
+        const user = data[0];
+        return NextResponse.json({
+            status: true,
+            user: {
+                fullName: user.fullName,
+                email: user.email,
+                Role: user.Role,
+                userToken: user.userToken,
+            },
+        });
+    } catch (error) {
+        console.error("Auth check error:", error);
         return NextResponse.json({ status: false, message: "Server error" }, { status: 500 });
     }
 }

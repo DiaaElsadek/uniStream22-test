@@ -8,7 +8,10 @@ export async function POST(req: NextRequest) {
   try {
     if (!SUPA_URL || !SUPA_SERVICE_KEY) {
       console.error("Missing Supabase env vars");
-      return NextResponse.json({ message: "Server configuration error", status: false, type: "server" }, { status: 500 });
+      return NextResponse.json(
+        { message: "Server configuration error", status: false, type: "server" },
+        { status: 500 }
+      );
     }
 
     const body = await req.json();
@@ -16,7 +19,10 @@ export async function POST(req: NextRequest) {
     const password = (body.password || "").toString();
 
     if (!email || !password) {
-      return NextResponse.json({ message: "Email and password are required.", status: false, type: "validation" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Email and password are required.", status: false, type: "validation" },
+        { status: 400 }
+      );
     }
 
     // fetch user by email
@@ -31,13 +37,19 @@ export async function POST(req: NextRequest) {
     if (!resUser.ok) {
       const txt = await resUser.text();
       console.error("Supabase lookup failed:", resUser.status, txt);
-      return NextResponse.json({ message: "Failed to lookup user.", status: false, type: "server" }, { status: 500 });
+      return NextResponse.json(
+        { message: "Failed to lookup user.", status: false, type: "server" },
+        { status: 500 }
+      );
     }
 
     const users = await resUser.json();
 
     if (!Array.isArray(users) || users.length === 0) {
-      return NextResponse.json({ message: "Invalid credentials.", status: false, type: "credentials" }, { status: 401 });
+      return NextResponse.json(
+        { message: "Invalid credentials.", status: false, type: "credentials" },
+        { status: 401 }
+      );
     }
 
     const user = users[0];
@@ -45,30 +57,33 @@ export async function POST(req: NextRequest) {
     // NOTE: this example compares plain-text passwords.
     // In production you MUST hash passwords (bcrypt) and compare hashes.
     if (user.password !== password) {
-      return NextResponse.json({ message: "Invalid credentials.", status: false, type: "credentials" }, { status: 401 });
+      return NextResponse.json(
+        { message: "Invalid credentials.", status: false, type: "credentials" },
+        { status: 401 }
+      );
     }
 
-    // create a basic token (for demo). Replace with JWT or real session in production.
-    const payload = {
-      academicId: user.AcademicId ?? user.academicId ?? "",
-      email: user.email,
-      fullName: user.fullName ?? "",
-      ts: Date.now(),
-    };
-    const userToken = Buffer.from(JSON.stringify(payload)).toString("base64");
+    // ✅ هنا بناخد التوكن اللي في قاعدة البيانات كما هو
+    const userToken = user.userToken ?? user.token ?? "";
 
     // return user info (avoid returning sensitive fields)
     const responseUser = {
       academicId: user.AcademicId ?? user.academicId ?? "",
       email: user.email,
-      fullName: user.fullName ?? "",
-      userToken,
+      fullName: user.fullName ?? "user",
+      userToken, // التوكن الحقيقي من الداتا بيز
       role: user.role ?? "user",
     };
 
-    return NextResponse.json({ message: "Logged in", status: true, type: "success", user: responseUser }, { status: 200 });
+    return NextResponse.json(
+      { message: "Logged in", status: true, type: "success", user: responseUser },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("Login error:", err);
-    return NextResponse.json({ message: "Internal server error.", status: false, type: "server" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error.", status: false, type: "server" },
+      { status: 500 }
+    );
   }
 }
