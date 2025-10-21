@@ -7,15 +7,16 @@ export default function InstallPrompt() {
     const [fadeOut, setFadeOut] = useState(false);
 
     useEffect(() => {
-        // نتحقق إذا المستخدم على ديسكتوب فقط
+        // نتحقق لو المستخدم على موبايل (iPhone / iPad / Android)
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isMobile = /iphone|ipad|ipod|android|mobile/.test(userAgent);
 
+        // لو مش موبايل (يعني ديسكتوب أو لابتوب) نعرض الرسالة
         if (!isMobile) {
             setShowInstallBox(true);
         }
 
-        // نخفيها بعد 5 ثواني
+        // نخفيها بعد 5 ثواني تلقائيًا
         if (showInstallBox) {
             const timer = setTimeout(() => {
                 setFadeOut(true);
@@ -36,18 +37,18 @@ export default function InstallPrompt() {
         <div className={`install-prompt-box ${fadeOut ? "fade-out" : "fade-in"}`}>
             <div className="gradient-border"></div>
             <button className="close-btn" onClick={handleClose}>×</button>
-            
+
             <div className="install-content">
                 <div className="icon-container">
-                    <div className="icon">📱</div>
+                    <div className="icon">💻</div>
                     <div className="pulse-ring"></div>
                 </div>
                 <div className="text-content">
                     <h3>Install Web App</h3>
-                    <p>Get quick access by installing this app to your desktop</p>
+                    <p>For quick access, you can install this app directly on your desktop.</p>
                     <div className="hint">
-                        <span className="keyboard-shortcut">Ctrl+</span>
-                        <span>Browser Menu → "Install App"</span>
+                        <span className="keyboard-shortcut">Settings</span>
+                        <span> → "Install App"</span>
                     </div>
                 </div>
             </div>
@@ -57,25 +58,18 @@ export default function InstallPrompt() {
                     position: fixed;
                     top: 24px;
                     left: 24px;
-                    background: linear-gradient(135deg, 
-                        rgba(25, 25, 35, 0.98) 0%,
-                        rgba(35, 35, 55, 0.98) 100%);
+                    background: linear-gradient(135deg, rgba(25,25,35,0.98), rgba(35,35,55,0.98));
                     backdrop-filter: blur(20px);
                     border-radius: 24px;
-                    box-shadow: 
-                        0 20px 60px rgba(0, 0, 0, 0.3),
-                        0 0 0 1px rgba(255, 255, 255, 0.1),
-                        0 8px 32px rgba(0, 0, 0, 0.4),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
                     padding: 24px;
                     z-index: 10000;
-                    color: #ffffff;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    overflow: hidden;
+                    color: #fff;
                     max-width: 380px;
                     opacity: 0;
                     transform: translateY(-20px) scale(0.95);
                     transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    overflow: hidden;
                 }
 
                 .fade-in {
@@ -102,7 +96,7 @@ export default function InstallPrompt() {
                         #4facfe 100%
                     );
                     background-size: 400% 400%;
-                    animation: installPromptGradientMove 6s ease infinite;
+                    animation: gradientMove 6s ease infinite;
                     z-index: 1;
                     pointer-events: none;
                     opacity: 0.8;
@@ -125,7 +119,6 @@ export default function InstallPrompt() {
                     align-items: center;
                     justify-content: center;
                     transition: all 0.2s ease;
-                    backdrop-filter: blur(10px);
                 }
 
                 .close-btn:hover {
@@ -148,8 +141,7 @@ export default function InstallPrompt() {
 
                 .icon {
                     font-size: 28px;
-                    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-                    animation: installPromptFloat 3s ease-in-out infinite;
+                    animation: float 3s ease-in-out infinite;
                 }
 
                 .pulse-ring {
@@ -161,12 +153,7 @@ export default function InstallPrompt() {
                     height: 40px;
                     border: 2px solid rgba(102, 126, 234, 0.4);
                     border-radius: 50%;
-                    animation: installPromptPulse 2s ease-out infinite;
-                    pointer-events: none;
-                }
-
-                .text-content {
-                    flex: 1;
+                    animation: pulse 2s ease-out infinite;
                 }
 
                 .text-content h3 {
@@ -176,15 +163,12 @@ export default function InstallPrompt() {
                     background: linear-gradient(135deg, #fff 0%, #a8b1ff 100%);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
-                    background-clip: text;
                 }
 
                 .text-content p {
                     margin: 0 0 12px 0;
                     font-size: 14px;
-                    line-height: 1.5;
                     color: rgba(255, 255, 255, 0.9);
-                    font-weight: 500;
                 }
 
                 .hint {
@@ -207,28 +191,18 @@ export default function InstallPrompt() {
                     border: 1px solid rgba(255, 255, 255, 0.2);
                 }
 
-                @keyframes installPromptGradientMove {
-                    0% {
-                        background-position: 0% 50%;
-                    }
-                    50% {
-                        background-position: 100% 50%;
-                    }
-                    100% {
-                        background-position: 0% 50%;
-                    }
+                @keyframes gradientMove {
+                    0% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
                 }
 
-                @keyframes installPromptFloat {
-                    0%, 100% {
-                        transform: translateY(0px);
-                    }
-                    50% {
-                        transform: translateY(-4px);
-                    }
+                @keyframes float {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-4px); }
                 }
 
-                @keyframes installPromptPulse {
+                @keyframes pulse {
                     0% {
                         transform: translate(-50%, -50%) scale(1);
                         opacity: 1;
@@ -239,7 +213,6 @@ export default function InstallPrompt() {
                     }
                 }
 
-                /* Responsive design */
                 @media (max-width: 480px) {
                     .install-prompt-box {
                         top: 16px;
@@ -249,7 +222,6 @@ export default function InstallPrompt() {
                     }
                 }
 
-                /* Reduced motion for accessibility */
                 @media (prefers-reduced-motion: reduce) {
                     .install-prompt-box,
                     .icon,
