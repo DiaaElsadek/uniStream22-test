@@ -18,10 +18,13 @@ async function handelSignup(
     fullName: string
 ): Promise<SignupResponse> {
     try {
+        // 🟢 توليد userToken فريد
+        const userToken = `Token-${academicId}${crypto.randomUUID()}`;
+
         const res = await fetch("/api/signup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ academicId, email, password, fullName }),
+            body: JSON.stringify({ academicId, email, password, fullName, userToken }),
         });
 
         const data = await res.json();
