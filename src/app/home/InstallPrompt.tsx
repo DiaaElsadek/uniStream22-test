@@ -7,6 +7,7 @@ export default function InstallPrompt() {
     const [fadeOut, setFadeOut] = useState(false);
 
     useEffect(() => {
+        // نتحقق إذا المستخدم على ديسكتوب فقط
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isMobile = /iphone|ipad|ipod|android|mobile/.test(userAgent);
 
@@ -14,6 +15,7 @@ export default function InstallPrompt() {
             setShowInstallBox(true);
         }
 
+        // نخفيها بعد 5 ثواني
         if (showInstallBox) {
             const timer = setTimeout(() => {
                 setFadeOut(true);
@@ -31,7 +33,7 @@ export default function InstallPrompt() {
     if (!showInstallBox) return null;
 
     return (
-        <div className={`install-box ${fadeOut ? "fade-out" : "fade-in"}`}>
+        <div className={`install-prompt-box ${fadeOut ? "fade-out" : "fade-in"}`}>
             <div className="gradient-border"></div>
             <button className="close-btn" onClick={handleClose}>×</button>
             
@@ -51,7 +53,7 @@ export default function InstallPrompt() {
             </div>
 
             <style jsx>{`
-                .install-box {
+                .install-prompt-box {
                     position: fixed;
                     top: 24px;
                     left: 24px;
@@ -100,7 +102,7 @@ export default function InstallPrompt() {
                         #4facfe 100%
                     );
                     background-size: 400% 400%;
-                    animation: gradientMove 6s ease infinite;
+                    animation: installPromptGradientMove 6s ease infinite;
                     z-index: 1;
                     pointer-events: none;
                     opacity: 0.8;
@@ -147,7 +149,7 @@ export default function InstallPrompt() {
                 .icon {
                     font-size: 28px;
                     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-                    animation: float 3s ease-in-out infinite;
+                    animation: installPromptFloat 3s ease-in-out infinite;
                 }
 
                 .pulse-ring {
@@ -159,7 +161,7 @@ export default function InstallPrompt() {
                     height: 40px;
                     border: 2px solid rgba(102, 126, 234, 0.4);
                     border-radius: 50%;
-                    animation: pulse 2s ease-out infinite;
+                    animation: installPromptPulse 2s ease-out infinite;
                     pointer-events: none;
                 }
 
@@ -167,7 +169,7 @@ export default function InstallPrompt() {
                     flex: 1;
                 }
 
-                h3 {
+                .text-content h3 {
                     margin: 0 0 8px 0;
                     font-size: 16px;
                     font-weight: 700;
@@ -177,7 +179,7 @@ export default function InstallPrompt() {
                     background-clip: text;
                 }
 
-                p {
+                .text-content p {
                     margin: 0 0 12px 0;
                     font-size: 14px;
                     line-height: 1.5;
@@ -205,7 +207,7 @@ export default function InstallPrompt() {
                     border: 1px solid rgba(255, 255, 255, 0.2);
                 }
 
-                @keyframes gradientMove {
+                @keyframes installPromptGradientMove {
                     0% {
                         background-position: 0% 50%;
                     }
@@ -217,7 +219,7 @@ export default function InstallPrompt() {
                     }
                 }
 
-                @keyframes float {
+                @keyframes installPromptFloat {
                     0%, 100% {
                         transform: translateY(0px);
                     }
@@ -226,7 +228,7 @@ export default function InstallPrompt() {
                     }
                 }
 
-                @keyframes pulse {
+                @keyframes installPromptPulse {
                     0% {
                         transform: translate(-50%, -50%) scale(1);
                         opacity: 1;
@@ -239,7 +241,7 @@ export default function InstallPrompt() {
 
                 /* Responsive design */
                 @media (max-width: 480px) {
-                    .install-box {
+                    .install-prompt-box {
                         top: 16px;
                         left: 16px;
                         right: 16px;
@@ -249,7 +251,7 @@ export default function InstallPrompt() {
 
                 /* Reduced motion for accessibility */
                 @media (prefers-reduced-motion: reduce) {
-                    .install-box,
+                    .install-prompt-box,
                     .icon,
                     .pulse-ring,
                     .gradient-border {
