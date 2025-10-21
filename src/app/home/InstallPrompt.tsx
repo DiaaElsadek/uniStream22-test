@@ -5,25 +5,50 @@ import { useEffect, useState } from "react";
 export default function MobileInstallPrompt() {
     const [showInstallBox, setShowInstallBox] = useState(false);
     const [fadeOut, setFadeOut] = useState(false);
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [isAndroid, setIsAndroid] = useState(false);
 
     useEffect(() => {
-        // نتحقق لو المستخدم على موبايل (Android / iPhone / iPad)
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isMobile = /iphone|ipad|ipod|android|mobile/.test(userAgent);
+        setIsAndroid(/android/.test(userAgent));
 
-        if (isMobile) {
+        // نخزن الحدث لما يكون أندرويد
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            setShowInstallBox(true);
+        });
+
+        // fallback في حالة مش ظهر الحدث
+        if (isMobile && !isAndroid) {
             setShowInstallBox(true);
         }
 
-        // نخفيها بعد 7 ثواني تلقائيًا
+        // نخفيها بعد 10 ثواني تلقائيًا
         if (showInstallBox) {
             const timer = setTimeout(() => {
                 setFadeOut(true);
                 setTimeout(() => setShowInstallBox(false), 500);
-            }, 7000);
+            }, 10000);
             return () => clearTimeout(timer);
         }
     }, [showInstallBox]);
+
+    const handleInstall = async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === "accepted") {
+                console.log("User accepted installation");
+            } else {
+                console.log("User dismissed installation");
+            }
+            setDeferredPrompt(null);
+            setFadeOut(true);
+            setTimeout(() => setShowInstallBox(false), 300);
+        }
+    };
 
     const handleClose = () => {
         setFadeOut(true);
@@ -38,14 +63,23 @@ export default function MobileInstallPrompt() {
                 <button className="close" onClick={handleClose}>×</button>
                 <div className="icon">📲</div>
                 <div className="text">
-                    <h4>Add to Home Screen</h4>
-                    <p>Install this app on your device for quick access!</p>
-                    <div className="steps">
-                        <span>Tap</span>
-                        <strong>⋮</strong>
-                        <span>or</span>
-                        <strong>Share → Add to Home Screen</strong>
-                    </div>
+                    <h4>{isAndroid ? "Install App" : "Add to Home Screen"}</h4>
+                    <p>
+                        {isAndroid
+                            ? "Install this app directly on your device for faster access."
+                            : "Tap 'Share → Add to Home Screen' to install this app."}
+                    </p>
+
+                    {isAndroid ? (
+                        <button className="install-btn" onClick={handleInstall}>
+                            Install
+                        </button>
+                    ) : (
+                        <div className="steps">
+                            <span>Tap</span> <strong>⋮</strong> <span>or</span>{" "}
+                            <strong>Share → Add to Home Screen</strong>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -112,6 +146,23 @@ export default function MobileInstallPrompt() {
                     font-size: 12px;
                     opacity: 0.9;
                     margin-top: 4px;
+                }
+
+                .install-btn {
+                    background: linear-gradient(135deg, #4facfe, #00f2fe);
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 10px;
+                    color: white;
+                    font-weight: 600;
+                    cursor: pointer;
+                    margin-top: 6px;
+                    transition: all 0.3s ease;
+                }
+
+                .install-btn:hover {
+                    opacity: 0.85;
+                    transform: scale(1.05);
                 }
 
                 .close {
