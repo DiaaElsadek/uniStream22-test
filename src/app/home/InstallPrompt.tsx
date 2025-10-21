@@ -3,53 +3,27 @@
 import { useEffect, useState } from "react";
 
 export default function InstallPrompt() {
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showInstallBox, setShowInstallBox] = useState(false);
-    const [isIOS, setIsIOS] = useState(false);
     const [fadeOut, setFadeOut] = useState(false);
 
     useEffect(() => {
+        // نتحقق إذا المستخدم على ديسكتوب فقط
         const userAgent = window.navigator.userAgent.toLowerCase();
-        const iOS = /iphone|ipad|ipod/.test(userAgent);
-        const standalone = (window.navigator as any).standalone === true;
+        const isMobile = /iphone|ipad|ipod|android|mobile/.test(userAgent);
 
-        if (iOS && !standalone) {
-            setIsIOS(true);
+        if (!isMobile) {
             setShowInstallBox(true);
         }
 
-        const handleBeforeInstallPrompt = (e: any) => {
-            e.preventDefault();
-            setDeferredPrompt(e);
-            setShowInstallBox(true);
-        };
-
-        window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
-        return () => {
-            window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-        };
-    }, []);
-
-    // ✅ Auto hide after 5s for both iOS & Android with fade animation
-    useEffect(() => {
+        // نخفيها بعد 5 ثواني
         if (showInstallBox) {
             const timer = setTimeout(() => {
                 setFadeOut(true);
-                setTimeout(() => setShowInstallBox(false), 600); // بعد الانيميشن
+                setTimeout(() => setShowInstallBox(false), 600);
             }, 5000);
             return () => clearTimeout(timer);
         }
     }, [showInstallBox]);
-
-    const handleInstallClick = async () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        const choiceResult = await deferredPrompt.userChoice;
-        setDeferredPrompt(null);
-        setFadeOut(true);
-        setTimeout(() => setShowInstallBox(false), 600);
-    };
 
     if (!showInstallBox) return null;
 
@@ -57,14 +31,8 @@ export default function InstallPrompt() {
         <div className={`install-box ${fadeOut ? "fade-out" : "fade-in"}`}>
             <div className="gradient-border"></div>
             <div className="install-content">
-                {isIOS ? (
-                    <p>📱 Tap <b>Share</b> → <b>Add to Home Screen</b> to install the app.</p>
-                ) : (
-                    <>
-                        <p>📱 Install the app for a faster and smoother experience!</p>
-                        <button onClick={handleInstallClick}>Install</button>
-                    </>
-                )}
+                <div className="icon">📱</div>
+                <p>💻 You can install the web app directly from your browser menu!</p>
             </div>
 
             <style jsx>{`
@@ -72,38 +40,40 @@ export default function InstallPrompt() {
                     position: fixed;
                     top: 20px;
                     left: 20px;
-                    background: rgba(20, 20, 30, 0.9);
-                    border-radius: 1.5rem;
-                    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
-                    padding: 15px 25px;
+                    background: linear-gradient(135deg, rgba(30, 30, 50, 0.95), rgba(50, 50, 80, 0.95));
+                    border-radius: 2rem;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(100, 100, 255, 0.3);
+                    padding: 20px 30px;
                     z-index: 1000;
-                    color: #e5e7eb;
-                    font-weight: 500;
+                    color: #ffffff;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    font-weight: 600;
+                    font-size: 14px;
                     overflow: hidden;
-                    max-width: 280px;
+                    max-width: 350px;
                     opacity: 0;
-                    transform: translateY(-15px);
-                    transition: opacity 0.6s ease, transform 0.6s ease;
+                    transform: translateY(-20px) scale(0.95);
+                    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                 }
 
                 .fade-in {
                     opacity: 1;
-                    transform: translateY(0);
+                    transform: translateY(0) scale(1);
                 }
 
                 .fade-out {
                     opacity: 0;
-                    transform: translateY(-15px);
+                    transform: translateY(-20px) scale(0.95);
                 }
 
                 .gradient-border {
                     position: absolute;
                     inset: 0;
-                    padding: 2px;
-                    border-radius: 1.5rem;
-                    background: linear-gradient(270deg, rgba(0, 0, 0, 0.6), #e5e7eb);
+                    padding: 3px;
+                    border-radius: 2rem;
+                    background: linear-gradient(270deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe);
                     background-size: 600% 600%;
-                    animation: gradientMove 6s ease infinite;
+                    animation: gradientMove 8s ease infinite;
                     z-index: 1;
                     pointer-events: none;
                 }
@@ -112,25 +82,18 @@ export default function InstallPrompt() {
                     position: relative;
                     z-index: 5;
                     display: flex;
-                    flex-direction: column;
-                    align-items: flex-start;
-                    gap: 10px;
+                    align-items: center;
+                    gap: 15px;
                 }
 
-                button {
-                    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-                    color: white;
-                    border: none;
-                    border-radius: 0.75rem;
-                    padding: 6px 14px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: transform 0.2s, box-shadow 0.2s;
+                .icon {
+                    font-size: 24px;
+                    animation: bounce 2s infinite;
                 }
 
-                button:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+                p {
+                    margin: 0;
+                    line-height: 1.4;
                 }
 
                 @keyframes gradientMove {
@@ -142,6 +105,18 @@ export default function InstallPrompt() {
                     }
                     100% {
                         background-position: 0% 50%;
+                    }
+                }
+
+                @keyframes bounce {
+                    0%, 20%, 50%, 80%, 100% {
+                        transform: translateY(0);
+                    }
+                    40% {
+                        transform: translateY(-5px);
+                    }
+                    60% {
+                        transform: translateY(-3px);
                     }
                 }
             `}</style>
