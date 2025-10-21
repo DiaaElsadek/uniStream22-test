@@ -2,26 +2,25 @@
 
 import { useEffect, useState } from "react";
 
-export default function InstallPrompt() {
+export default function MobileInstallPrompt() {
     const [showInstallBox, setShowInstallBox] = useState(false);
     const [fadeOut, setFadeOut] = useState(false);
 
     useEffect(() => {
-        // نتحقق لو المستخدم على موبايل (iPhone / iPad / Android)
+        // نتحقق لو المستخدم على موبايل (Android / iPhone / iPad)
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isMobile = /iphone|ipad|ipod|android|mobile/.test(userAgent);
 
-        // لو مش موبايل (يعني ديسكتوب أو لابتوب) نعرض الرسالة
-        if (!isMobile) {
+        if (isMobile) {
             setShowInstallBox(true);
         }
 
-        // نخفيها بعد 5 ثواني تلقائيًا
+        // نخفيها بعد 7 ثواني تلقائيًا
         if (showInstallBox) {
             const timer = setTimeout(() => {
                 setFadeOut(true);
-                setTimeout(() => setShowInstallBox(false), 600);
-            }, 5000);
+                setTimeout(() => setShowInstallBox(false), 500);
+            }, 7000);
             return () => clearTimeout(timer);
         }
     }, [showInstallBox]);
@@ -34,202 +33,108 @@ export default function InstallPrompt() {
     if (!showInstallBox) return null;
 
     return (
-        <div className={`install-prompt-box ${fadeOut ? "fade-out" : "fade-in"}`}>
-            <div className="gradient-border"></div>
-            <button className="close-btn" onClick={handleClose}>×</button>
-
-            <div className="install-content">
-                <div className="icon-container">
-                    <div className="icon">💻</div>
-                    <div className="pulse-ring"></div>
-                </div>
-                <div className="text-content">
-                    <h3>Install Web App</h3>
-                    <p>For quick access, you can install this app directly on your desktop.</p>
-                    <div className="hint">
-                        <span className="keyboard-shortcut">Settings</span>
-                        <span> → "Install App"</span>
+        <div className={`mobile-install-prompt ${fadeOut ? "fade-out" : "fade-in"}`}>
+            <div className="mobile-content">
+                <button className="close" onClick={handleClose}>×</button>
+                <div className="icon">📲</div>
+                <div className="text">
+                    <h4>Add to Home Screen</h4>
+                    <p>Install this app on your device for quick access!</p>
+                    <div className="steps">
+                        <span>Tap</span>
+                        <strong>⋮</strong>
+                        <span>or</span>
+                        <strong>Share → Add to Home Screen</strong>
                     </div>
                 </div>
             </div>
 
             <style jsx>{`
-                .install-prompt-box {
+                .mobile-install-prompt {
                     position: fixed;
-                    top: 24px;
-                    left: 24px;
-                    background: linear-gradient(135deg, rgba(25,25,35,0.98), rgba(35,35,55,0.98));
-                    backdrop-filter: blur(20px);
-                    border-radius: 24px;
-                    box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
-                    padding: 24px;
-                    z-index: 10000;
-                    color: #fff;
-                    max-width: 380px;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(20, 20, 30, 0.95);
+                    color: white;
+                    border-radius: 20px;
+                    padding: 16px 20px;
+                    width: 90%;
+                    max-width: 400px;
+                    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+                    z-index: 9999;
+                    font-family: 'Inter', sans-serif;
                     opacity: 0;
-                    transform: translateY(-20px) scale(0.95);
-                    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-                    overflow: hidden;
+                    transform: translate(-50%, 20px);
+                    transition: all 0.4s ease;
                 }
 
                 .fade-in {
                     opacity: 1;
-                    transform: translateY(0) scale(1);
+                    transform: translate(-50%, 0);
                 }
 
                 .fade-out {
                     opacity: 0;
-                    transform: translateY(-20px) scale(0.95);
+                    transform: translate(-50%, 20px);
                 }
 
-                .gradient-border {
-                    position: absolute;
-                    inset: 0;
-                    padding: 2px;
-                    border-radius: 24px;
-                    background: linear-gradient(
-                        135deg,
-                        #667eea 0%,
-                        #764ba2 25%,
-                        #f093fb 50%,
-                        #f5576c 75%,
-                        #4facfe 100%
-                    );
-                    background-size: 400% 400%;
-                    animation: gradientMove 6s ease infinite;
-                    z-index: 1;
-                    pointer-events: none;
-                    opacity: 0.8;
-                }
-
-                .close-btn {
-                    position: absolute;
-                    top: 12px;
-                    right: 16px;
-                    background: rgba(255, 255, 255, 0.1);
-                    border: none;
-                    border-radius: 50%;
-                    width: 28px;
-                    height: 28px;
-                    color: #fff;
-                    font-size: 18px;
-                    cursor: pointer;
-                    z-index: 10;
+                .mobile-content {
                     display: flex;
                     align-items: center;
-                    justify-content: center;
-                    transition: all 0.2s ease;
-                }
-
-                .close-btn:hover {
-                    background: rgba(255, 255, 255, 0.2);
-                    transform: scale(1.1);
-                }
-
-                .install-content {
+                    gap: 12px;
                     position: relative;
-                    z-index: 5;
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 16px;
-                }
-
-                .icon-container {
-                    position: relative;
-                    flex-shrink: 0;
                 }
 
                 .icon {
                     font-size: 28px;
-                    animation: float 3s ease-in-out infinite;
+                    flex-shrink: 0;
+                    animation: bounce 2s infinite;
                 }
 
-                .pulse-ring {
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 40px;
-                    height: 40px;
-                    border: 2px solid rgba(102, 126, 234, 0.4);
-                    border-radius: 50%;
-                    animation: pulse 2s ease-out infinite;
+                .text {
+                    flex: 1;
                 }
 
-                .text-content h3 {
-                    margin: 0 0 8px 0;
-                    font-size: 16px;
+                .text h4 {
+                    margin: 0;
+                    font-size: 15px;
                     font-weight: 700;
-                    background: linear-gradient(135deg, #fff 0%, #a8b1ff 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
                 }
 
-                .text-content p {
-                    margin: 0 0 12px 0;
-                    font-size: 14px;
-                    color: rgba(255, 255, 255, 0.9);
+                .text p {
+                    margin: 4px 0;
+                    font-size: 13px;
+                    opacity: 0.85;
                 }
 
-                .hint {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
+                .steps {
                     font-size: 12px;
-                    color: rgba(255, 255, 255, 0.7);
-                    background: rgba(255, 255, 255, 0.05);
-                    padding: 8px 12px;
-                    border-radius: 12px;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    opacity: 0.9;
+                    margin-top: 4px;
                 }
 
-                .keyboard-shortcut {
-                    background: rgba(255, 255, 255, 0.1);
-                    padding: 2px 6px;
-                    border-radius: 6px;
-                    font-weight: 600;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
+                .close {
+                    position: absolute;
+                    top: -10px;
+                    right: -10px;
+                    background: rgba(255,255,255,0.1);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 26px;
+                    height: 26px;
+                    font-size: 16px;
+                    cursor: pointer;
                 }
 
-                @keyframes gradientMove {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
+                .close:hover {
+                    background: rgba(255,255,255,0.2);
                 }
 
-                @keyframes float {
+                @keyframes bounce {
                     0%, 100% { transform: translateY(0); }
                     50% { transform: translateY(-4px); }
-                }
-
-                @keyframes pulse {
-                    0% {
-                        transform: translate(-50%, -50%) scale(1);
-                        opacity: 1;
-                    }
-                    100% {
-                        transform: translate(-50%, -50%) scale(1.4);
-                        opacity: 0;
-                    }
-                }
-
-                @media (max-width: 480px) {
-                    .install-prompt-box {
-                        top: 16px;
-                        left: 16px;
-                        right: 16px;
-                        max-width: none;
-                    }
-                }
-
-                @media (prefers-reduced-motion: reduce) {
-                    .install-prompt-box,
-                    .icon,
-                    .pulse-ring,
-                    .gradient-border {
-                        animation: none;
-                        transition: none;
-                    }
                 }
             `}</style>
         </div>
