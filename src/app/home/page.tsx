@@ -468,7 +468,7 @@ export default function HomePage() {
                         >
                             <input
                                 type="text"
-                                placeholder="🔍 Search for news, subjects, or groups..."
+                                placeholder="Search for news, subjects, or groups..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full px-6 sm:px-8 py-4 sm:py-5 rounded-3xl bg-gray-800/80 border-2 border-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none text-white text-base sm:text-lg shadow-2xl placeholder-gray-400 transition-all duration-500 backdrop-blur-xl"

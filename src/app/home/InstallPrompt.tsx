@@ -5,17 +5,22 @@ import { useEffect, useState } from "react";
 export default function InstallPrompt() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showInstallBox, setShowInstallBox] = useState(false);
-    const [isIOS, setIsIOS] = useState(false);
+    const [platform, setPlatform] = useState<"ios" | "android" | "desktop" | null>(null);
     const [fadeOut, setFadeOut] = useState(false);
 
     useEffect(() => {
         const userAgent = window.navigator.userAgent.toLowerCase();
-        const iOS = /iphone|ipad|ipod/.test(userAgent);
-        const standalone = (window.navigator as any).standalone === true;
+        const isIOS = /iphone|ipad|ipod/.test(userAgent);
+        const isAndroid = /android/.test(userAgent);
+        const isStandalone = (window.navigator as any).standalone === true;
 
-        if (iOS && !standalone) {
-            setIsIOS(true);
+        if (isIOS && !isStandalone) {
+            setPlatform("ios");
             setShowInstallBox(true);
+        } else if (isAndroid) {
+            setPlatform("android");
+        } else {
+            setPlatform("desktop");
         }
 
         const handleBeforeInstallPrompt = (e: any) => {
@@ -31,12 +36,12 @@ export default function InstallPrompt() {
         };
     }, []);
 
-    // ✅ Auto hide after 5s for both iOS & Android with fade animation
+    // ⏱️ إخفاء البوكس بعد 5 ثواني مع انيميشن
     useEffect(() => {
         if (showInstallBox) {
             const timer = setTimeout(() => {
                 setFadeOut(true);
-                setTimeout(() => setShowInstallBox(false), 600); // بعد الانيميشن
+                setTimeout(() => setShowInstallBox(false), 600);
             }, 5000);
             return () => clearTimeout(timer);
         }
@@ -57,12 +62,21 @@ export default function InstallPrompt() {
         <div className={`install-box ${fadeOut ? "fade-out" : "fade-in"}`}>
             <div className="gradient-border"></div>
             <div className="install-content">
-                {isIOS ? (
-                    <p>📱 Tap <b>Share</b> → <b>Add to Home Screen</b> to install the app.</p>
-                ) : (
+                {platform === "ios" && (
+                    <p>📱 على أجهزة iPhone: اضغط <b>Share</b> ثم <b>Add to Home Screen</b> لتثبيت التطبيق.</p>
+                )}
+
+                {platform === "android" && (
                     <>
-                        <p>📱 Install the app for a faster and smoother experience!</p>
-                        <button onClick={handleInstallClick}>Install</button>
+                        <p>📲 ثبّت التطبيق لتجربة أسرع وأفضل!</p>
+                        <button onClick={handleInstallClick}>تثبيت التطبيق</button>
+                    </>
+                )}
+
+                {platform === "desktop" && (
+                    <>
+                        <p>💻 يمكنك تثبيت التطبيق على سطح المكتب لتسهيل الوصول إليه.</p>
+                        <button onClick={handleInstallClick}>تثبيت الآن</button>
                     </>
                 )}
             </div>
@@ -72,7 +86,7 @@ export default function InstallPrompt() {
                     position: fixed;
                     top: 20px;
                     left: 20px;
-                    background: rgba(20, 20, 30, 0.9);
+                    background: rgba(20, 20, 30, 0.95);
                     border-radius: 1.5rem;
                     box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
                     padding: 15px 25px;
@@ -80,7 +94,7 @@ export default function InstallPrompt() {
                     color: #e5e7eb;
                     font-weight: 500;
                     overflow: hidden;
-                    max-width: 280px;
+                    max-width: 300px;
                     opacity: 0;
                     transform: translateY(-15px);
                     transition: opacity 0.6s ease, transform 0.6s ease;
