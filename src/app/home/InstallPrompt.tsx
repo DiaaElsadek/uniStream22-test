@@ -2,190 +2,147 @@
 
 import { useEffect, useState } from "react";
 
-export default function MobileInstallPrompt() {
-    const [showInstallBox, setShowInstallBox] = useState(false);
-    const [fadeOut, setFadeOut] = useState(false);
+export default function InstallPrompt() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-    const [isAndroid, setIsAndroid] = useState(false);
+    const [showInstallBox, setShowInstallBox] = useState(false);
+    const [isIOS, setIsIOS] = useState(false);
+    const [fadeOut, setFadeOut] = useState(false);
 
     useEffect(() => {
         const userAgent = window.navigator.userAgent.toLowerCase();
-        const isMobile = /iphone|ipad|ipod|android|mobile/.test(userAgent);
-        setIsAndroid(/android/.test(userAgent));
+        const iOS = /iphone|ipad|ipod/.test(userAgent);
+        const standalone = (window.navigator as any).standalone === true;
 
-        // نخزن الحدث لما يكون أندرويد
-        window.addEventListener("beforeinstallprompt", (e) => {
-            e.preventDefault();
-            setDeferredPrompt(e);
-            setShowInstallBox(true);
-        });
-
-        // fallback في حالة مش ظهر الحدث
-        if (isMobile && !isAndroid) {
+        if (iOS && !standalone) {
+            setIsIOS(true);
             setShowInstallBox(true);
         }
 
-        // نخفيها بعد 10 ثواني تلقائيًا
+        const handleBeforeInstallPrompt = (e: any) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            setShowInstallBox(true);
+        };
+
+        window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+        return () => {
+            window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+        };
+    }, []);
+
+    // ✅ Auto hide after 5s for both iOS & Android with fade animation
+    useEffect(() => {
         if (showInstallBox) {
             const timer = setTimeout(() => {
                 setFadeOut(true);
-                setTimeout(() => setShowInstallBox(false), 500);
-            }, 10000);
+                setTimeout(() => setShowInstallBox(false), 600); // بعد الانيميشن
+            }, 5000);
             return () => clearTimeout(timer);
         }
     }, [showInstallBox]);
 
-    const handleInstall = async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === "accepted") {
-                console.log("User accepted installation");
-            } else {
-                console.log("User dismissed installation");
-            }
-            setDeferredPrompt(null);
-            setFadeOut(true);
-            setTimeout(() => setShowInstallBox(false), 300);
-        }
-    };
-
-    const handleClose = () => {
+    const handleInstallClick = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+        setDeferredPrompt(null);
         setFadeOut(true);
-        setTimeout(() => setShowInstallBox(false), 300);
+        setTimeout(() => setShowInstallBox(false), 600);
     };
 
     if (!showInstallBox) return null;
 
     return (
-        <div className={`mobile-install-prompt ${fadeOut ? "fade-out" : "fade-in"}`}>
-            <div className="mobile-content">
-                <button className="close" onClick={handleClose}>×</button>
-                <div className="icon">📲</div>
-                <div className="text">
-                    <h4>{isAndroid ? "Install App" : "Add to Home Screen"}</h4>
-                    <p>
-                        {isAndroid
-                            ? "Install this app directly on your device for faster access."
-                            : "Tap 'Share → Add to Home Screen' to install this app."}
-                    </p>
-
-                    {isAndroid ? (
-                        <button className="install-btn" onClick={handleInstall}>
-                            Install
-                        </button>
-                    ) : (
-                        <div className="steps">
-                            <span>Tap</span> <strong>⋮</strong> <span>or</span>{" "}
-                            <strong>Share → Add to Home Screen</strong>
-                        </div>
-                    )}
-                </div>
+        <div className={`install-box ${fadeOut ? "fade-out" : "fade-in"}`}>
+            <div className="gradient-border"></div>
+            <div className="install-content">
+                {isIOS ? (
+                    <p>📱 Tap <b>Share</b> → <b>Add to Home Screen</b> to install the app.</p>
+                ) : (
+                    <>
+                        <p>📱 Install the app for a faster and smoother experience!</p>
+                        <button onClick={handleInstallClick}>Install</button>
+                    </>
+                )}
             </div>
 
             <style jsx>{`
-                .mobile-install-prompt {
+                .install-box {
                     position: fixed;
-                    bottom: 20px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: rgba(20, 20, 30, 0.95);
-                    color: white;
-                    border-radius: 20px;
-                    padding: 16px 20px;
-                    width: 90%;
-                    max-width: 400px;
-                    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-                    z-index: 9999;
-                    font-family: 'Inter', sans-serif;
+                    top: 20px;
+                    left: 20px;
+                    background: rgba(20, 20, 30, 0.9);
+                    border-radius: 1.5rem;
+                    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+                    padding: 15px 25px;
+                    z-index: 1000;
+                    color: #e5e7eb;
+                    font-weight: 500;
+                    overflow: hidden;
+                    max-width: 280px;
                     opacity: 0;
-                    transform: translate(-50%, 20px);
-                    transition: all 0.4s ease;
+                    transform: translateY(-15px);
+                    transition: opacity 0.6s ease, transform 0.6s ease;
                 }
 
                 .fade-in {
                     opacity: 1;
-                    transform: translate(-50%, 0);
+                    transform: translateY(0);
                 }
 
                 .fade-out {
                     opacity: 0;
-                    transform: translate(-50%, 20px);
+                    transform: translateY(-15px);
                 }
 
-                .mobile-content {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
+                .gradient-border {
+                    position: absolute;
+                    inset: 0;
+                    padding: 2px;
+                    border-radius: 1.5rem;
+                    background: linear-gradient(270deg, rgba(0, 0, 0, 0.6), #e5e7eb);
+                    background-size: 600% 600%;
+                    animation: gradientMove 6s ease infinite;
+                    z-index: 1;
+                    pointer-events: none;
+                }
+
+                .install-content {
                     position: relative;
+                    z-index: 5;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 10px;
                 }
 
-                .icon {
-                    font-size: 28px;
-                    flex-shrink: 0;
-                    animation: bounce 2s infinite;
-                }
-
-                .text {
-                    flex: 1;
-                }
-
-                .text h4 {
-                    margin: 0;
-                    font-size: 15px;
-                    font-weight: 700;
-                }
-
-                .text p {
-                    margin: 4px 0;
-                    font-size: 13px;
-                    opacity: 0.85;
-                }
-
-                .steps {
-                    font-size: 12px;
-                    opacity: 0.9;
-                    margin-top: 4px;
-                }
-
-                .install-btn {
-                    background: linear-gradient(135deg, #4facfe, #00f2fe);
-                    border: none;
-                    padding: 8px 16px;
-                    border-radius: 10px;
+                button {
+                    background: linear-gradient(135deg, #2563eb, #1d4ed8);
                     color: white;
+                    border: none;
+                    border-radius: 0.75rem;
+                    padding: 6px 14px;
                     font-weight: 600;
                     cursor: pointer;
-                    margin-top: 6px;
-                    transition: all 0.3s ease;
+                    transition: transform 0.2s, box-shadow 0.2s;
                 }
 
-                .install-btn:hover {
-                    opacity: 0.85;
-                    transform: scale(1.05);
+                button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
                 }
 
-                .close {
-                    position: absolute;
-                    top: -10px;
-                    right: -10px;
-                    background: rgba(255,255,255,0.1);
-                    color: white;
-                    border: none;
-                    border-radius: 50%;
-                    width: 26px;
-                    height: 26px;
-                    font-size: 16px;
-                    cursor: pointer;
-                }
-
-                .close:hover {
-                    background: rgba(255,255,255,0.2);
-                }
-
-                @keyframes bounce {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-4px); }
+                @keyframes gradientMove {
+                    0% {
+                        background-position: 0% 50%;
+                    }
+                    50% {
+                        background-position: 100% 50%;
+                    }
+                    100% {
+                        background-position: 0% 50%;
+                    }
                 }
             `}</style>
         </div>
