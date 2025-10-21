@@ -226,3 +226,8 @@
         transform: rotate(360deg);
     }
 }
+
+.resizable-box {
+  resize: both;           /* يخليها قابلة للتكبير أفقي ورأسي */
+  overflow: auto;         /* يظهر سكرول لو المحتوى طويل */
+}
