@@ -37,6 +37,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             // حماية المسارات الخاصة بالأدمن فقط
             if ((pathname.startsWith("/dashboard") || pathname.startsWith("/dashboard/addnews")) &&
                 user?.Role !== "admin") {
+                    console.log("Role : ",user?.Role);
                 router.replace("/home");
                 return;
             }

@@ -1,67 +1,25 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import "./style.css";
 import { useRouter } from "next/navigation";
 
-const API_URL = "https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/News";
-const HEADERS = {
-    apikey:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-    Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkaHZmdXZkeHdod29iZ2xldXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0OTIwODQsImV4cCI6MjA3NDA2ODA4NH0.P-EefbnljoUmaQ-t03FypD37CRmTDa8Xhv-QMJHndY4",
-    "Content-Type": "application/json",
-};
-
-async function handelRole(userToken: string): Promise<boolean> {
-    if (!userToken) return false;
-    const query = `?userToken=eq.${userToken}`;
-    const url = `https://udhvfuvdxwhwobgleuyd.supabase.co/rest/v1/AppUser${query}`;
-
-    try {
-        const res = await fetch(url, { method: "GET", headers: HEADERS });
-        const data = await res.json();
-        return "admin" === data[0].Role;
-    } catch {
-        return false;
-    }
-}
-
-export default function AdminDashboard() {
+export default function AddNewsPage() {
     const router = useRouter();
     const [news, setNews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [toast, setToast] = useState<{ type: string; message: string } | null>(
-        null
-    );
-    const [isAdmin, setisAdmin] = useState(false);
+    const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
     const [isEdit, setIsEdit] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
-
-    useEffect(() => {
-        const checkRoleAndFetch = async () => {
-            const userToken = localStorage.getItem("userToken");
-            const check = await handelRole(userToken!);
-            setisAdmin(check);
-
-            if (!check) {
-                router.replace("/home");
-            }
-        };
-
-        checkRoleAndFetch();
-    }, []);
 
     const [formData, setFormData] = useState({
         title: "",
         content: "",
         subjectId: 0,
         groupId: 0,
-        createdAt: "",
-        publishData: false,
         week: 1,
+        publishData: false,
         createdBy: "",
     });
 
@@ -72,7 +30,6 @@ export default function AdminDashboard() {
         "اتصالات البيانات",
         "مشروع تخرج 1",
     ];
-
     const groups = ["global", "1", "2", "3", "4", "5", "6"];
 
     const showToast = (type: "success" | "error", message: string) => {
@@ -82,144 +39,93 @@ export default function AdminDashboard() {
 
     async function fetchNews() {
         setLoading(true);
-        const res = await fetch(API_URL, { headers: HEADERS });
-        const data = await res.json();
-
-        const sortedData = Array.isArray(data)
-            ? data.sort((a, b) => b.id - a.id)
-            : [];
-        setNews(sortedData);
+        const res = await fetch("/api/dashboard/addnews", { method: "GET" });
+        const json = await res.json();
+        if (json.status) {
+            setNews(json.data.sort((a: any, b: any) => b.id - a.id));
+        }
         setLoading(false);
     }
 
     async function deleteNews(id: number) {
-        const res = await fetch(`${API_URL}?id=eq.${id}`, {
+        const res = await fetch("/api/dashboard/addnews", {
             method: "DELETE",
-            headers: HEADERS,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
         });
-
-        if (res.ok) {
-            setNews((prev) => prev.filter((n) => n.id !== id));
+        const json = await res.json();
+        if (json.status) {
             showToast("success", "✅ تم حذف الخبر بنجاح");
-        } else {
-            showToast("error", "⚠️ حدث خطأ أثناء حذف الخبر");
-        }
+            setNews((prev) => prev.filter((n) => n.id !== id));
+        } else showToast("error", "⚠️ حدث خطأ أثناء الحذف");
     }
 
     async function addOrEditNews() {
-        const now = new Date();
-        const newData = {
-            title: formData.title.trim(),
-            content: formData.content.trim(),
-            subjectId: formData.subjectId,
-            groupId: formData.groupId,
-            week: formData.week,
-            isGeneral: formData.publishData,
-            createdAt: now.toISOString(),
+        const now = new Date().toISOString();
+        const body = {
+            ...formData,
             createdBy: localStorage.getItem("fullName"),
+            createdAt: now,
         };
 
-        if (isEdit && editId !== null) {
-            const res = await fetch(`${API_URL}?id=eq.${editId}`, {
-                method: "PATCH",
-                headers: {
-                    ...HEADERS,
-                    Prefer: "return=representation",
-                },
-                body: JSON.stringify(newData),
-            });
-            if (res.ok) {
-                showToast("success", "✅ تم تعديل الخبر بنجاح");
-            } else {
-                showToast("error", "⚠️ حدث خطأ أثناء تعديل الخبر");
-            }
-        } else {
-            const res = await fetch(API_URL, {
-                method: "POST",
-                headers: HEADERS,
-                body: JSON.stringify(newData),
-            });
-            if (res.ok) {
-                showToast("success", "🎉 تم إضافة الخبر بنجاح");
-            } else {
-                showToast("error", "⚠️ حدث خطأ أثناء إضافة الخبر");
-            }
-        }
-
-        setShowModal(false);
-        setFormData({
-            title: "",
-            content: "",
-            subjectId: 0,
-            groupId: 0,
-            publishData: false,
-            createdAt: "",
-            week: 1,
-            createdBy: "",
+        const res = await fetch("/api/dashboard/addnews", {
+            method: isEdit ? "PATCH" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(isEdit ? { id: editId, ...body } : body),
         });
-        setIsEdit(false);
-        setEditId(null);
-        fetchNews();
+
+        const json = await res.json();
+        if (json.status) {
+            showToast("success", isEdit ? "✅ تم التعديل" : "🎉 تم الإضافة بنجاح");
+            fetchNews();
+            setShowModal(false);
+            setIsEdit(false);
+            setEditId(null);
+        } else showToast("error", "⚠️ حدث خطأ أثناء الحفظ");
     }
 
     useEffect(() => {
         fetchNews();
     }, []);
 
-    function normalize(text: string) {
-        return text
-            .toLowerCase()
-            .replace(/\s+/g, "")
-            .replace(/[^\w\u0600-\u06FF]+/g, "");
+    function normalizeText(text: string) {
+        return text?.toString().toLowerCase().trim().replace(/\s+/g, "");
     }
 
     const filteredNews = news.filter((item) => {
-        const search = normalize(searchTerm);
-        const title = normalize(item.title || "");
-        const subject = normalize(subjects[item.subjectId - 1] || "");
-        const week = normalize(item.week?.toString() || "");
-
+        const term = normalizeText(searchTerm);
         return (
-            title.includes(search) ||
-            subject.includes(search) ||
-            week.includes(search)
+            normalizeText(item.title).includes(term) ||
+            normalizeText(item.content).includes(term) ||
+            normalizeText(subjects[item.subjectId - 1] || "").includes(term) ||
+            normalizeText(item.groupId).includes(term) ||
+            normalizeText(item.week).includes(term) ||
+            normalizeText(item.createdBy || "").includes(term) ||
+            normalizeText(formatDateTime(item.createdAt)).includes(term)
         );
     });
 
-    if (loading || !isAdmin) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-                <div className="flex space-x-3 mb-6">
-                    <motion.div
-                        animate={{ y: [0, -15, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.6, delay: 0 }}
-                        className="w-4 h-4 rounded-full bg-indigo-500"
-                    />
-                    <motion.div
-                        animate={{ y: [0, -15, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
-                        className="w-4 h-4 rounded-full bg-indigo-400"
-                    />
-                    <motion.div
-                        animate={{ y: [0, -15, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
-                        className="w-4 h-4 rounded-full bg-indigo-300"
-                    />
-                </div>
-                <motion.h1
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.5 }}
-                    className="text-3xl font-bold tracking-wide"
-                >
-                    Loading News...
-                </motion.h1>
-            </div>
-        );
+    function formatDateTime(dateString: string) {
+        if (!dateString) return "غير محدد";
+        const date = new Date(dateString);
+        return `${date.toLocaleDateString("ar-EG")} - ${date.toLocaleTimeString("ar-EG", {
+            hour: "2-digit",
+            minute: "2-digit",
+        })}`;
     }
 
+    if (loading)
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex justify-center items-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-xl text-gray-300 font-semibold">جاري تحميل الأخبار...</p>
+                </div>
+            </div>
+        );
+
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black text-white p-6 relative overflow-x-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white p-4 sm:p-6 lg:p-8">
             <AnimatePresence>
                 {toast && (
                     <motion.div
@@ -227,234 +133,282 @@ export default function AdminDashboard() {
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: 300, opacity: 0 }}
                         transition={{ type: "spring", duration: 0.6 }}
-                        className={`fixed top-6 right-6 px-6 py-3 rounded-lg shadow-lg text-white font-semibold z-50 ${toast.type === "success"
-                            ? "bg-green-600/90 border border-green-400"
-                            : "bg-red-600/90 border border-red-400"
-                            }`}
+                        className={`fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl font-bold z-50 border-l-4 ${
+                            toast.type === "success"
+                                ? "bg-gradient-to-r from-green-900/90 to-green-800/90 border-green-400 text-green-100"
+                                : "bg-gradient-to-r from-red-900/90 to-red-800/90 border-red-400 text-red-100"
+                        } backdrop-blur-sm`}
                     >
-                        {toast.message}
+                        <div className="flex items-center gap-3">
+                            {/* <span className="text-xl">{toast.type === "success" ? "✅" : "⚠️"}</span> */}
+                            <span>{toast.message}</span>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <div className="flex justify-between items-center mb-10 border-b border-gray-700 pb-4">
-                <h1 className="text-3xl font-extrabold tracking-wide text-indigo-400">
-                    Dashboard
-                </h1>
-                <button
-                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 transition rounded-lg font-semibold shadow-lg cursor-pointer"
-                    onClick={() => {
-                        setShowModal(true);
-                        setIsEdit(false);
-                        setFormData({
-                            title: "",
-                            content: "",
-                            subjectId: 0,
-                            groupId: 0,
-                            publishData: false,
-                            createdAt: "",
-                            week: 1,
-                            createdBy: "",
-                        });
-                    }}
-                >
-                    Add New +
-                </button>
-            </div>
-
-            <div className="text-center mb-5">
-                <button
-                    onClick={() => router.back()}
-                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 transition rounded-lg font-semibold shadow-lg cursor-pointer"
-                >
-                    Back
-                </button>
-            </div>
-
-            <div className="mb-8 text-center">
-                <input
-                    type="text"
-                    placeholder="🔍 ابحث عن عنوان أو مادة أو أسبوع"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="text-center w-80 p-3 rounded-xl bg-gray-800 border border-gray-700 focus:border-indigo-500 outline-none transition"
-                />
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredNews.map((item) => (
-                    <div
-                        key={item.id}
-                        className="relative bg-gray-900/80 backdrop-blur-lg p-6 rounded-2xl shadow-md border border-gray-700 hover:border-indigo-600 transition duration-300 hover:scale-[1.02] overflow-hidden break-words"
-                    >
-                        <h3 className="text-2xl font-bold mb-2 text-indigo-300 break-words overflow-hidden">
-                            {item.title || "بدون عنوان"}
-                        </h3>
-                        <p className="text-gray-300 mb-4 leading-relaxed break-words overflow-hidden">
-                            {item.content || "لا يوجد محتوى"}
-                        </p>
-                        <div className="text-sm text-gray-400 space-y-1">
-                            <p>📘 المادة: {item.subjectId === 0 ? "Global" : subjects[item.subjectId - 1]}</p>
-                            <p>👥 المجموعة: {item.groupId === 0 ? "Global" : item.groupId}</p>
-                            <p>📅 الأسبوع: {item.week}</p>
-                            <p>
-                                🕓 التاريخ:{" "}
-                                {item.createdAt
-                                    ? new Date(item.createdAt).toLocaleString("ar-EG")
-                                    : "غير متاح"}
-                            </p>
-                        </div>
-                        <p className="text-gray-300 mb-4 pt-5 leading-relaxed break-words overflow-hidden">
-                            created By : {item.createdBy || "Admin"}
-                        </p>
-                        <div className="flex justify-between mt-3">
-                            <button
-                                onClick={() => {
-                                    setShowModal(true);
-                                    setIsEdit(true);
-                                    setEditId(item.id);
-                                    setFormData({
-                                        title: item.title,
-                                        content: item.content,
-                                        subjectId: item.subjectId,
-                                        groupId: item.groupId,
-                                        publishData: item.isGeneral,
-                                        createdAt: item.createdAt,
-                                        week: item.week,
-                                        createdBy: item.createdBy,
-                                    });
-                                }}
-                                className="cursor-pointer px-4 py-1 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-semibold transition"
-                            >
-                                Edit
-                            </button>
-                            <button
-                                onClick={() => deleteNews(item.id)}
-                                className="cursor-pointer px-4 py-1 bg-red-600 hover:bg-red-700 rounded-md text-sm font-semibold transition"
-                            >
-                                Delete
-                            </button>
-                        </div>
+            <div className="max-w-7xl mx-auto mb-12">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mb-8">
+                    <div className="text-center sm:text-right">
+                        <h1 className="text-4xl lg:text-5xl font-black bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
+                            إدارة الأخبار
+                        </h1>
+                        <p className="text-gray-400 text-lg">أضف وادر أخبار المواد الدراسية والمجموعات</p>
                     </div>
-                ))}
+
+                    <button
+                        onClick={() => {
+                            setShowModal(true);
+                            setIsEdit(false);
+                            setFormData({
+                                title: "",
+                                content: "",
+                                subjectId: 0,
+                                groupId: 0,
+                                week: 1,
+                                publishData: false,
+                                createdBy: "",
+                            });
+                        }}
+                        className="group relative bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 px-8 py-4 rounded-2xl font-bold text-lg shadow-2xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-300 transform hover:scale-105"
+                    >
+                        <span className="flex items-center gap-3">
+                            <span className="text-xl">📰</span>
+                            إضافة خبر جديد
+                            <span className="text-2xl group-hover:rotate-90 transition-transform duration-300">+</span>
+                        </span>
+                    </button>
+                </div>
+
+                <div className="relative max-w-2xl mx-auto">
+                    <div className="absolute inset-y-0 right-4 flex items-center pr-3 pointer-events-none">
+                        <span className="text-gray-400 text-xl">🔍</span>
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="ابحث عن عنوان، محتوى، مادة، أسبوع، أو أي معلومة..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full p-4 pr-12 bg-gray-800/50 border border-gray-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-gray-400 text-lg backdrop-blur-sm transition-all duration-300"
+                    />
+                </div>
             </div>
 
-            {showModal && (
-                <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-50 backdrop-blur-sm">
-                    <div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-full max-w-lg shadow-2xl animate-fadeIn relative">
-                        <h2 className="text-3xl font-bold mb-6 text-center text-indigo-400">
-                            {isEdit ? "Edit News" : "Add New"}
-                        </h2>
+            <div className="max-w-7xl mx-auto">
+                {filteredNews.length === 0 ? (
+                    <div className="text-center py-20">
+                        <div className="text-6xl mb-4">📰</div>
+                        <h3 className="text-2xl font-bold text-gray-400 mb-2">لا توجد أخبار</h3>
+                        <p className="text-gray-500">لم يتم إضافة أي أخبار بعد</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+                        {filteredNews.map((item) => (
+                            <div
+                                key={item.id}
+                                className="group relative bg-gradient-to-br from-gray-900/80 to-gray-800/80 p-6 rounded-3xl border border-gray-700/30 shadow-2xl shadow-black/20 backdrop-blur-sm hover:shadow-indigo-500/10 hover:border-indigo-500/30 transition-all duration-500 hover:transform hover:scale-105"
+                            >
+                                {/* نقل العمود إلى الشمال */}
+                                <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-indigo-500 to-purple-600 rounded-r-2xl"></div>
 
-                        <div className="space-y-4">
+                                <div className="flex justify-between items-start mb-4 pl-2">
+                                    <h3 className="text-xl font-black bg-gradient-to-l from-indigo-200 to-purple-200 bg-clip-text text-transparent leading-tight">
+                                        {item.title}
+                                    </h3>
+                                    <span className="bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30 text-sm font-bold whitespace-nowrap">
+                                        الأسبوع {item.week}
+                                    </span>
+                                </div>
+
+                                <p className="text-gray-200 mb-6 leading-relaxed text-right pl-3 border-l-2 border-indigo-500/20 min-h-[80px]">
+                                    {item.content}
+                                </p>
+
+                                {/* الباقي زي ما هو */}
+                                <div className="grid grid-cols-1 gap-4 mb-6">
+                                    <div className="flex items-center gap-3 bg-gray-800/50 p-3 rounded-xl border border-gray-700/30">
+                                        <span className="bg-blue-500/20 p-2 rounded-lg">
+                                            <span className="text-blue-300 text-lg">📘</span>
+                                        </span>
+                                        <div className="text-right flex-1">
+                                            <p className="text-gray-400 text-xs font-semibold">المادة</p>
+                                            <p className="text-gray-200 font-medium">{subjects[item.subjectId - 1] || "عام"}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 bg-gray-800/50 p-3 rounded-xl border border-gray-700/30">
+                                        <span className="bg-green-500/20 p-2 rounded-lg">
+                                            <span className="text-green-300 text-lg">👥</span>
+                                        </span>
+                                        <div className="text-right flex-1">
+                                            <p className="text-gray-400 text-xs font-semibold">المجموعة</p>
+                                            <p className="text-gray-200 font-medium">{item.groupId || "الكل"}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 bg-gray-800/50 p-3 rounded-xl border border-gray-700/30">
+                                        <span className="bg-purple-500/20 p-2 rounded-lg">
+                                            <span className="text-purple-300 text-lg">✍️</span>
+                                        </span>
+                                        <div className="text-right flex-1">
+                                            <p className="text-gray-400 text-xs font-semibold">الناشر</p>
+                                            <p className="text-gray-200 font-medium">{item.createdBy || "Admin"}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 bg-gray-800/50 p-3 rounded-xl border border-gray-700/30">
+                                        <span className="bg-amber-500/20 p-2 rounded-lg">
+                                            <span className="text-amber-300 text-lg">🕒</span>
+                                        </span>
+                                        <div className="text-right flex-1">
+                                            <p className="text-gray-400 text-xs font-semibold">التاريخ</p>
+                                            <p className="text-gray-200 font-medium">{formatDateTime(item.createdAt)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 pt-4 border-t border-gray-700/30">
+                                    <button
+                                        onClick={() => {
+                                            setShowModal(true);
+                                            setIsEdit(true);
+                                            setEditId(item.id);
+                                            setFormData({
+                                                title: item.title,
+                                                content: item.content,
+                                                subjectId: item.subjectId,
+                                                groupId: item.groupId,
+                                                week: item.week,
+                                                publishData: item.publishData,
+                                                createdBy: item.createdBy,
+                                            });
+                                        }}
+                                        className="flex-1 group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white py-3 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 font-bold flex items-center justify-center gap-2"
+                                    >
+                                        <span className="group-hover:rotate-12 transition-transform duration-300">✏️</span>
+                                        تعديل
+                                    </button>
+                                    <button
+                                        onClick={() => deleteNews(item.id)}
+                                        className="flex-1 group bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white py-3 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-red-500/20 hover:shadow-red-500/30 font-bold flex items-center justify-center gap-2"
+                                    >
+                                        <span className="group-hover:scale-110 transition-transform duration-300">🗑️</span>
+                                        حذف
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50 p-4">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 sm:p-8 rounded-3xl w-full max-w-2xl border border-gray-700/50 shadow-2xl shadow-black/40"
+                    >
+                        <div className="text-center mb-8">
+                            <h2 className="text-3xl font-black bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                                {isEdit ? "✏️ تعديل الخبر" : "📰 إضافة خبر جديد"}
+                            </h2>
+                            <p className="text-gray-400 mt-2">{isEdit ? "قم بتعديل بيانات الخبر" : "املأ البيانات لإضافة خبر جديد"}</p>
+                        </div>
+
+                        <div className="space-y-6 text-right">
                             <div>
-                                <label className="block mb-1 text-gray-300">العنوان:</label>
+                                <label className="block text-sm font-bold text-gray-300 mb-3">عنوان الخبر</label>
                                 <input
                                     type="text"
+                                    placeholder="اكتب عنوان الخبر هنا..."
                                     value={formData.title}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, title: e.target.value })
-                                    }
-                                    className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-indigo-500 outline-none transition"
-                                    placeholder="اكتب عنوان الخبر"
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    className="w-full p-4 bg-gray-800/70 border border-gray-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-gray-400 transition-all duration-300 text-lg"
                                 />
                             </div>
 
                             <div>
-                                <label className="block mb-1 text-gray-300">المحتوى:</label>
+                                <label className="block text-sm font-bold text-gray-300 mb-3">محتوى الخبر</label>
                                 <textarea
                                     rows={4}
+                                    placeholder="اكتب تفاصيل الخبر..."
                                     value={formData.content}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, content: e.target.value })
-                                    }
-                                    className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-indigo-500 outline-none transition"
-                                    placeholder="اكتب محتوى الخبر..."
-                                ></textarea>
+                                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                    className="w-full p-4 bg-gray-800/70 border border-gray-700/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-gray-400 transition-all duration-300 resize-none text-lg"
+                                />
                             </div>
 
-                            <div className="flex flex-col gap-4">
-                                <div className="flex gap-4">
-                                    <div className="flex-1">
-                                        <label className="block mb-1 text-gray-300">المادة:</label>
-                                        <select
-                                            value={formData.subjectId}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    subjectId: Number(e.target.value),
-                                                })
-                                            }
-                                            className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-indigo-500 outline-none transition"
-                                        >
-                                            <option value={0}>Global</option>
-                                            {subjects.map((sub, i) => (
-                                                <option key={i + 1} value={i + 1}>
-                                                    {sub}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="flex-1">
-                                        <label className="block mb-1 text-gray-300">المجموعة:</label>
-                                        <select
-                                            value={formData.groupId}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    groupId:
-                                                        e.target.value === "global"
-                                                            ? 0
-                                                            : Number(e.target.value),
-                                                })
-                                            }
-                                            className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-indigo-500 outline-none transition"
-                                        >
-                                            {groups.map((g, i) => (
-                                                <option key={i} value={g}>
-                                                    {g}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-300 mb-3">المادة</label>
+                                    <select
+                                        value={formData.subjectId}
+                                        onChange={(e) => setFormData({ ...formData, subjectId: Number(e.target.value) })}
+                                        className="w-full p-4 bg-gray-800/70 border border-gray-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-300"
+                                    >
+                                        <option value={0}>عام (Global)</option>
+                                        {subjects.map((s, i) => (
+                                            <option key={i + 1} value={i + 1}>
+                                                {s}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
 
-                                <div className="flex-1">
-                                    <label className="block mb-1 text-gray-300">
-                                        📅 رقم الأسبوع:
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.week}
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-300 mb-3">المجموعة</label>
+                                    <select
+                                        value={formData.groupId}
                                         onChange={(e) =>
                                             setFormData({
                                                 ...formData,
-                                                week: Number(e.target.value),
+                                                groupId: e.target.value === "global" ? 0 : Number(e.target.value),
                                             })
                                         }
-                                        className="w-full p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-indigo-500 outline-none transition"
-                                        placeholder="اكتب رقم الأسبوع (مثلاً: 3)"
+                                        className="w-full p-4 bg-gray-800/70 border border-gray-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-300"
+                                    >
+                                        {groups.map((g, i) => (
+                                            <option key={i} value={g}>
+                                                {g}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-300 mb-3">الأسبوع</label>
+                                    <input
+                                        type="number"
+                                        placeholder="مثلاً: 5"
+                                        value={formData.week || ""}
+                                        onChange={(e) => setFormData({ ...formData, week: Number(e.target.value) })}
+                                        className="w-full p-4 bg-gray-800/70 border border-gray-700/50 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder-gray-400 transition-all duration-300"
                                     />
                                 </div>
                             </div>
 
-                            <div className="flex justify-between mt-8">
+                            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-700/50">
                                 <button
                                     onClick={() => setShowModal(false)}
-                                    className="px-5 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition font-semibold"
+                                    className="w-full sm:w-auto bg-gray-700/50 hover:bg-gray-600/50 px-8 py-4 rounded-xl font-bold text-gray-300 transition-all duration-300 border border-gray-600/50 hover:border-gray-500/50"
                                 >
                                     إلغاء
                                 </button>
                                 <button
                                     onClick={addOrEditNews}
-                                    className="px-6 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 font-semibold shadow-md transition"
+                                    className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 px-8 py-4 rounded-xl font-bold text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-300 transform hover:scale-105"
                                 >
-                                    {isEdit ? "تعديل" : "إضافة"}
+                                    <span className="flex items-center gap-2 justify-center">
+                                        {isEdit ? "💾" : "➕"}
+                                        {isEdit ? "تعديل الخبر" : "إضافة الخبر"}
+                                    </span>
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             )}
         </div>
