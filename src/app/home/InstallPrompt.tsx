@@ -59,7 +59,7 @@ export default function InstallPrompt() {
     if (!showInstallBox) return null;
 
     return (
-        <div className={`fixed top-6 left-6 z-50 max-w-sm ${fadeOut ? "animate-fadeOut" : "animate-fadeIn"}`}>
+        <div className={`fixed top-6 left-6 z-[9999] max-w-sm ${fadeOut ? "animate-fadeOut" : "animate-fadeIn"}`}>
             {/* Card Container */}
             <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 rounded-2xl p-6 shadow-2xl border border-white/10 backdrop-blur-sm">
                 {/* Animated Border */}
