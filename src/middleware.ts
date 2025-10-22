@@ -52,6 +52,10 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL("/home", req.url));
     }
 
+    if(user && (pathname.startsWith("/login") || pathname.startsWith("/signup"))){
+        return NextResponse.redirect(new URL("/home", req.url));
+    }
+
     return NextResponse.next();
 }
 
