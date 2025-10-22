@@ -24,7 +24,7 @@ async function checkUser(userToken: string) {
 
 export default async function AuthProvider({ children }: { children: React.ReactNode }) {
     const cookieStore = cookies();
-    const userToken = cookieStore.get("userToken")?.value || null;
+    const userToken = (await cookieStore).get("userToken")?.value || null;
 
     // ✅ نحاول نجيب الـ pathname من الكوكي (لو بتحفظه) أو نستخدم فلاج بسيط
     const currentUrl = typeof window === "undefined" ? "" : window.location.pathname;
