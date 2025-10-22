@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     // In production you MUST hash passwords (bcrypt) and compare hashes.
     if (user.password !== password) {
       return NextResponse.json(
-        { message: "Invalid credentials.", status: false, type: "credentials" },
+        { message: "Invalid Emain or Password.", status: false, type: "credentials" },
         { status: 401 }
       );
     }
