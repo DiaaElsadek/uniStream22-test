@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
+import { cookies } from "next/headers";
 
 type LoginResponse = {
   message: string;
@@ -127,7 +128,7 @@ export default function LoginPage() {
         localStorage.setItem("email", res.user.email);
         localStorage.setItem("fullName", res.user.fullName);
         localStorage.setItem("userToken", res.user.userToken);
-
+        (await cookies()).set("userToken", res.user.userToken, { httpOnly: true, secure: true });
         document.cookie = `role=${encodeURIComponent(res.user.role)}; path=/; Secure; SameSite=Lax`;
 
         alert("Logged in successfully!");

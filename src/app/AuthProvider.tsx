@@ -24,7 +24,7 @@ async function checkUser(userToken: string) {
 
 export default async function AuthProvider({ children }: { children: React.ReactNode }) {
     const cookieStore = cookies();
-    const userToken = localStorage.getItem("userToken") || null;
+    const userToken = cookieStore.get("userToken")?.value || null;
     const pathname = ""; // السيرفر ميقدرش يجيب pathname مباشرة — ممكن نستبدله بخاصية route segment لو محتاجين
 
     // لو مفيش userToken، رجّع المستخدم لصفحة login
