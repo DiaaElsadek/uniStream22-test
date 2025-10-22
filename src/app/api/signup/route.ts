@@ -1,7 +1,6 @@
 "use server";
 
 import { NextRequest, NextResponse } from "next/server";
-import { randomUUID } from "crypto";
 import { cookies } from "next/headers";
 
 const SUPA_URL = process.env.SUPABASE_URL!;
@@ -11,7 +10,44 @@ export async function POST(req: NextRequest) {
   try {
     const { academicId, email, password, fullName, userToken } = await req.json();
 
-    // تحقق من تكرار الـ Academic ID
+    // ========== VALIDATION SECTION ==========
+    if (!academicId || !email || !password || !fullName || !userToken) {
+      return NextResponse.json(
+        { message: "All fields are required.", status: false, type: "validation" },
+        { status: 400 }
+      );
+    }
+
+    if (!/^\d{8}$/.test(academicId)) {
+      return NextResponse.json(
+        { message: "Academic ID must be exactly 8 digits.", status: false, type: "academicId" },
+        { status: 400 }
+      );
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { message: "Please enter a valid email address.", status: false, type: "email" },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json(
+        { message: "Password must be at least 8 characters long.", status: false, type: "password" },
+        { status: 400 }
+      );
+    }
+
+    if (fullName.trim().length < 3) {
+      return NextResponse.json(
+        { message: "Full name must be at least 3 characters long.", status: false, type: "fullName" },
+        { status: 400 }
+      );
+    }
+
+    // ========== CHECK DUPLICATES ==========
     const resAcad = await fetch(`${SUPA_URL}/rest/v1/AppUser?AcademicId=eq.${academicId}`, {
       method: "GET",
       headers: {
@@ -27,7 +63,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // تحقق من تكرار الإيميل
     const resEmail = await fetch(`${SUPA_URL}/rest/v1/AppUser?email=eq.${email}`, {
       method: "GET",
       headers: {
@@ -43,7 +78,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // إدخال المستخدم الجديد
+    // ========== INSERT NEW USER ==========
     const insertRes = await fetch(`${SUPA_URL}/rest/v1/AppUser`, {
       method: "POST",
       headers: {
@@ -57,7 +92,7 @@ export async function POST(req: NextRequest) {
         email,
         password,
         fullName,
-        userToken: userToken,
+        userToken,
       }),
     });
 
