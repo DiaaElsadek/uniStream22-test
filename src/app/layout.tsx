@@ -1,4 +1,3 @@
-import "./globals.css";
 import AuthProvider from "./AuthProvider";
 
 export const metadata = {
@@ -18,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#091f42" />
       </head>
       <body>
+        {/* هنا AuthProvider هو Server Component */}
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

@@ -1,55 +1,46 @@
-"use client";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+const SUPA_URL = process.env.SUPABASE_URL!;
+const SUPA_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 async function checkUser(userToken: string) {
     try {
-        const res = await fetch(`/api/auth?userToken=${userToken}`);
+        const res = await fetch(`${SUPA_URL}/rest/v1/AppUser?userToken=eq.${userToken}`, {
+            headers: {
+                apikey: SUPA_SERVICE_KEY,
+                Authorization: `Bearer ${SUPA_SERVICE_KEY}`,
+            },
+            cache: "no-store",
+        });
+
         const data = await res.json();
-        if (!data.status) return null;
-        return data.user;
+        if (!Array.isArray(data) || data.length === 0) return null;
+        return data[0];
     } catch {
         return null;
     }
 }
 
-export default function AuthProvider({ children }: { children: React.ReactNode }) {
-    const router = useRouter();
-    const pathname = usePathname();
-    const [isLogged, setIsLogged] = useState(false);
+export default async function AuthProvider({ children }: { children: React.ReactNode }) {
+    const cookieStore = cookies();
+    const userToken = localStorage.getItem("userToken") || null;
+    const pathname = ""; // السيرفر ميقدرش يجيب pathname مباشرة — ممكن نستبدله بخاصية route segment لو محتاجين
 
-    useEffect(() => {
-        const verifyUser = async () => {
-            const userToken = localStorage.getItem("userToken");
-            if (!userToken) return;
+    // لو مفيش userToken، رجّع المستخدم لصفحة login
+    if (!userToken) {
+        redirect("/login");
+    }
 
-            const user = await checkUser(userToken);
-            const loggedIn = !!user;
-            setIsLogged(loggedIn);
-            console.log(loggedIn);
+    const user = await checkUser(userToken);
+    if (!user) {
+        redirect("/login");
+    }
 
-            if (!loggedIn && !pathname.startsWith("/login") && !pathname.startsWith("/signup")) {
-                router.replace("/login");
-                return;
-            }
-
-            // حماية المسارات الخاصة بالأدمن فقط
-            if ((pathname.startsWith("/dashboard") || pathname.startsWith("/dashboard/addnews")) &&
-                user?.Role !== "admin") {
-                    console.log("Role : ",user?.Role);
-                router.replace("/home");
-                return;
-            }
-
-            // لو المستخدم بالفعل داخل، ميقدرش يدخل صفحة اللوجين أو التسجيل
-            if ((pathname.startsWith("/login") || pathname.startsWith("/signup")) && loggedIn) {
-                router.replace("/home");
-            }
-        };
-
-        verifyUser();
-    }, [pathname]);
+    // لو المستخدم Admin فقط يدخل dashboard
+    if (user.Role !== "admin" && (pathname.startsWith("/dashboard") || pathname.startsWith("/dashboard/addnews"))) {
+        redirect("/home");
+    }
 
     return <>{children}</>;
 }
