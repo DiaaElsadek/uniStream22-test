@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { cookies } from "next/headers";
 
 type SignupResponse = {
     message: string;
@@ -246,7 +245,6 @@ export default function SignupPage() {
                 localStorage.setItem("email", email);
                 localStorage.setItem("fullName", fullName);
                 localStorage.setItem("userToken", userToken);
-                (await cookies()).set("userToken", userToken, { httpOnly: true, secure: true });
                 setTimeout(() => router.push("/selectschedule"), 300);
             } else {
                 if (result.type === "academicId") setAcademicError(result.message);

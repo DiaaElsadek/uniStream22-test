@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
+import { cookies } from "next/headers";
 
 const SUPA_URL = process.env.SUPABASE_URL!;
 const SUPA_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -9,7 +10,6 @@ const SUPA_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 export async function POST(req: NextRequest) {
   try {
     const { academicId, email, password, fullName, userToken } = await req.json();
-    const finalToken = userToken || randomUUID();
 
     // تحقق من تكرار الـ Academic ID
     const resAcad = await fetch(`${SUPA_URL}/rest/v1/AppUser?AcademicId=eq.${academicId}`, {
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         email,
         password,
         fullName,
-        userToken: finalToken,
+        userToken: userToken,
       }),
     });
 
@@ -71,6 +71,8 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await insertRes.json();
+
+    (await cookies()).set("userToken", userToken, { httpOnly: true, secure: true });
 
     return NextResponse.json({
       message: "Registered successfully!",

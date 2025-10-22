@@ -1,5 +1,6 @@
 // server-side route: app/api/login/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 const SUPA_URL = process.env.SUPABASE_URL!;
 const SUPA_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -74,6 +75,8 @@ export async function POST(req: NextRequest) {
       userToken, // التوكن الحقيقي من الداتا بيز
       role: user.role ?? "user",
     };
+    
+    (await cookies()).set("userToken", userToken, { httpOnly: true, secure: true });
 
     return NextResponse.json(
       { message: "Logged in", status: true, type: "success", user: responseUser },
