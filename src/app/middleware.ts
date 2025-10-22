@@ -50,7 +50,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // لو المستخدم مش admin وبيحاول يدخل على dashboard → نرجعه للـ home
-    if (user.Role !== "admin" && pathname.startsWith("/dashboard")) {
+    if (user.Role !== "admin" && (pathname.startsWith("/dashboard") || pathname.startsWith("/dashboard/addnews"))) {
         const homeUrl = new URL("/home", req.url);
         return NextResponse.redirect(homeUrl);
     }
