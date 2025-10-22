@@ -24,10 +24,20 @@ async function checkUser(userToken: string) {
 
 export default async function AuthProvider({ children }: { children: React.ReactNode }) {
     const cookieStore = cookies();
-    const userToken = (await cookieStore).get("userToken")?.value || null;
-    const pathname = ""; // السيرفر ميقدرش يجيب pathname مباشرة — ممكن نستبدله بخاصية route segment لو محتاجين
+    const userToken = cookieStore.get("userToken")?.value || null;
 
-    // لو مفيش userToken، رجّع المستخدم لصفحة login
+    // ✅ نحاول نجيب الـ pathname من الكوكي (لو بتحفظه) أو نستخدم فلاج بسيط
+    const currentUrl = typeof window === "undefined" ? "" : window.location.pathname;
+
+    // ✅ استثناء صفحات معينة زي login و signup
+    const publicRoutes = ["/login", "/signup"];
+
+    // ⚠️ لو المستخدم في صفحة عامة، مفيش داعي نعمل redirect
+    if (publicRoutes.includes(currentUrl)) {
+        return <>{children}</>;
+    }
+
+    // ✅ لو مفيش userToken → redirect
     if (!userToken) {
         redirect("/login");
     }
@@ -37,8 +47,8 @@ export default async function AuthProvider({ children }: { children: React.React
         redirect("/login");
     }
 
-    // لو المستخدم Admin فقط يدخل dashboard
-    if (user.Role !== "admin" && (pathname.startsWith("/dashboard") || pathname.startsWith("/dashboard/addnews"))) {
+    // ✅ لو المستخدم مش admin وداخل على dashboard
+    if (user.Role !== "admin" && currentUrl.startsWith("/dashboard")) {
         redirect("/home");
     }
 
