@@ -183,7 +183,7 @@ export default function LoginPage() {
             }}
           />
         ))}
-        
+
         {/* Enhanced Floating Shapes */}
         <motion.div
           animate={{
@@ -306,171 +306,77 @@ export default function LoginPage() {
             </motion.p>
           </motion.div>
 
-          {/* Enhanced Form */}
+          {/* Enhanced Login Form – Browser AutoSave Ready */}
           <motion.form
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
             onSubmit={handleSubmit}
             className="space-y-8"
+            method="POST"
+            action="/api/login"
+            autoComplete="on"
           >
-            {/* Enhanced Email Field */}
+            {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-gray-300 font-semibold mb-3 text-base">
                 Email Address
               </label>
-              <motion.div 
-                whileHover={{ scale: 1.02 }} 
-                whileFocus={{ scale: 1.02 }} 
-                className="relative group"
-              >
+              <motion.div whileHover={{ scale: 1.02 }} className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <EmailIcon className="w-5 h-5 text-gray-400 group-focus-within:text-gray-900 transition-colors duration-300" />
+                  <EmailIcon className="w-5 h-5 text-gray-400" />
                 </div>
                 <input
                   type="email"
                   id="email"
+                  name="email"
+                  autoComplete="username"
+                  required
                   value={email}
                   onChange={(e) => onEmailChange(e.target.value)}
-                  onBlur={() => onEmailChange(email)}
-                  required
-                  className={`w-full pl-12 pr-4 py-4 rounded-xl bg-gray-800/60 border-2 backdrop-blur-sm text-gray-100 placeholder-gray-500 focus:outline-none transition-all duration-500 ${
-                    emailError 
-                      ? "border-red-500/60 focus:border-red-500 shadow-lg shadow-red-500/10" 
-                      : "border-gray-700 focus:border-gray-500 focus:bg-gray-800/80 focus:shadow-2xl focus:shadow-gray-500/5"
-                  }`}
                   placeholder="Enter your email"
+                  className="w-full pl-12 pr-4 py-4 rounded-xl bg-gray-800/60 border-2 border-gray-700 focus:border-gray-400 text-gray-100"
                 />
               </motion.div>
-              <AnimatePresence>
-                {emailError && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    className="mt-3 text-sm text-red-400 flex items-center gap-2 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20"
-                  >
-                    <ErrorIcon className="w-4 h-4" />
-                    {emailError}
-                  </motion.p>
-                )}
-              </AnimatePresence>
             </div>
 
-            {/* Enhanced Password Field */}
+            {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-gray-300 font-semibold mb-3 text-base">
                 Password
               </label>
-              <motion.div 
-                whileHover={{ scale: 1.02 }} 
-                whileFocus={{ scale: 1.02 }} 
-                className="relative group"
-              >
+              <motion.div whileHover={{ scale: 1.02 }} className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <PasswordIcon className="w-5 h-5 text-gray-400 group-focus-within:text-gray-300 transition-colors duration-300" />
+                  <PasswordIcon className="w-5 h-5 text-gray-400" />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
+                  name="password"
+                  autoComplete="current-password"
+                  required
                   value={password}
                   onChange={(e) => onPasswordChange(e.target.value)}
-                  required
-                  className={`w-full pl-12 pr-12 py-4 rounded-xl bg-gray-800/60 border-2 backdrop-blur-sm text-gray-100 placeholder-gray-500 focus:outline-none transition-all duration-500 ${
-                    passwordError 
-                      ? "border-red-500/60 focus:border-red-500 shadow-lg shadow-red-500/10" 
-                      : "border-gray-700 focus:border-gray-500 focus:bg-gray-800/80 focus:shadow-2xl focus:shadow-gray-500/5"
-                  }`}
                   placeholder="Enter your password"
+                  className="w-full pl-12 pr-12 py-4 rounded-xl bg-gray-800/60 border-2 border-gray-700 focus:border-gray-400 text-gray-100"
                 />
                 <motion.button
                   type="button"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors duration-300 p-2 rounded-lg hover:bg-gray-700/50"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
                 >
-                  {!showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                  {!showPassword ? <EyeSlashIcon /> : <EyeIcon />}
                 </motion.button>
               </motion.div>
-              <AnimatePresence>
-                {passwordError && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    className="mt-3 text-sm text-red-400 flex items-center gap-2 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20"
-                  >
-                    <ErrorIcon className="w-4 h-4" />
-                    {passwordError}
-                  </motion.p>
-                )}
-              </AnimatePresence>
             </div>
 
-            {/* Enhanced Error Message */}
-            <AnimatePresence>
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                  className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm"
-                >
-                  <p className="text-red-400 text-center font-medium flex items-center justify-center gap-3">
-                    <ErrorIcon className="w-5 h-5" />
-                    {error}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Enhanced Submit Button */}
+            {/* Submit Button */}
             <motion.button
               type="submit"
               disabled={loading || !formValid}
-              onHoverStart={() => setIsHovered(true)}
-              onHoverEnd={() => setIsHovered(false)}
-              whileHover={!loading && formValid ? { scale: 1.02, y: -2 } : {}}
-              whileTap={!loading && formValid ? { scale: 0.98 } : {}}
-              className={`w-full py-4 rounded-xl font-bold text-base transition-all duration-500 relative overflow-hidden group ${
-                loading || !formValid
-                  ? "bg-gray-700 cursor-not-allowed text-gray-500"
-                  : "bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-700 hover:to-gray-600 text-gray-100 shadow-2xl hover:shadow-3xl hover:shadow-gray-500/10 border border-gray-600/50"
-              }`}
+              className="w-full py-4 rounded-xl font-bold text-base bg-gradient-to-r from-gray-800 to-gray-700 text-gray-100"
             >
-              <motion.span
-                animate={loading ? { opacity: [1, 0.8, 1] } : {}}
-                transition={{ duration: 2, repeat: loading ? Infinity : 0 }}
-                className="relative z-10 flex items-center justify-center gap-3"
-              >
-                {loading ? (
-                  <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      className="w-5 h-5 border-2 border-gray-300 border-t-transparent rounded-full"
-                    />
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    <LockIcon className="w-5 h-5" />
-                    Sign In
-                  </>
-                )}
-              </motion.span>
-              
-              {/* Enhanced Button Shine Effect */}
-              {!loading && formValid && (
-                <motion.div
-                  animate={{
-                    x: isHovered ? "100%" : "-100%",
-                  }}
-                  transition={{ duration: 1.2 }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-400/15 to-transparent transform -skew-x-12"
-                />
-              )}
+              {loading ? "Signing in..." : "Sign In"}
             </motion.button>
           </motion.form>
 

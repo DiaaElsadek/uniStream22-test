@@ -417,6 +417,7 @@ export default function SignupPage() {
                         transition={{ delay: 1 }}
                         onSubmit={handleSubmit}
                         className="space-y-6"
+                        autoComplete="on"
                     >
                         {/* Enhanced Full Name Field */}
                         <div>
