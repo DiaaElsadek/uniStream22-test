@@ -1,9 +1,16 @@
 // server-side route: app/api/login/route.ts
+"use server";
+
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 const SUPA_URL = process.env.SUPABASE_URL!;
 const SUPA_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+// دالة لتنظيف أي أكواد JavaScript أو HTML
+function sanitizeInput(input: string): string {
+  return input.replace(/<[^>]*>?/gm, "").replace(/script/gi, "").trim();
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,9 +23,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const email = (body.email || "").toString().trim();
-    const password = (body.password || "").toString();
+    const emailRaw = (body.email || "").toString().trim();
+    const passwordRaw = (body.password || "").toString();
 
+    // تنظيف المدخلات من أي أكواد ضارة
+    const email = sanitizeInput(emailRaw);
+    const password = sanitizeInput(passwordRaw);
+
+    // فاليديشن أساسي
     if (!email || !password) {
       return NextResponse.json(
         { message: "Email and password are required.", status: false, type: "validation" },
@@ -26,7 +38,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // fetch user by email
+    // السماح فقط بحروف وأرقام و @ و .
+    const emailRegex = /^[A-Za-z0-9@.]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { message: "Email can only contain letters, numbers, '@', and '.'", status: false, type: "email" },
+        { status: 400 }
+      );
+    }
+
+    // كلمة المرور 8 حروف بالضبط
+    if (password.length !== 8) {
+      return NextResponse.json(
+        { message: "Password must be exactly 8 characters long.", status: false, type: "password" },
+        { status: 400 }
+      );
+    }
+
+    // البحث عن المستخدم بالبريد الإلكتروني
     const resUser = await fetch(`${SUPA_URL}/rest/v1/AppUser?email=eq.${encodeURIComponent(email)}`, {
       method: "GET",
       headers: {
@@ -55,28 +84,32 @@ export async function POST(req: NextRequest) {
 
     const user = users[0];
 
-    // NOTE: this example compares plain-text passwords.
-    // In production you MUST hash passwords (bcrypt) and compare hashes.
+    // مقارنة كلمة المرور (يُفضل لاحقًا عمل hash)
     if (user.password !== password) {
       return NextResponse.json(
-        { message: "Invalid Emain or Password.", status: false, type: "credentials" },
+        { message: "Invalid Email or Password.", status: false, type: "credentials" },
         { status: 401 }
       );
     }
 
-    // ✅ هنا بناخد التوكن اللي في قاعدة البيانات كما هو
+    // استخدام التوكن من قاعدة البيانات
     const userToken = user.userToken ?? user.token ?? "";
 
-    // return user info (avoid returning sensitive fields)
     const responseUser = {
       academicId: user.AcademicId ?? user.academicId ?? "",
       email: user.email,
       fullName: user.fullName ?? "user",
-      userToken, // التوكن الحقيقي من الداتا بيز
+      userToken,
       role: user.role ?? "user",
     };
-    
-    (await cookies()).set("userToken", userToken, { httpOnly: true, secure: true });
+
+    // حفظ الـ token في cookies بشكل آمن
+    (await cookies()).set("userToken", userToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      path: "/",
+    });
 
     return NextResponse.json(
       { message: "Logged in", status: true, type: "success", user: responseUser },

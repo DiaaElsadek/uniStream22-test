@@ -644,7 +644,7 @@ export default function SignupPage() {
                             </motion.div>
 
                             <div className="mt-4 space-y-2">
-                                <RuleLine ok={pwLenOk} text="At least 8 characters" />
+                                <RuleLine ok={pwLenOk} text="Only 8 characters" />
                                 <RuleLine ok={pwUpperOk} text="At least one uppercase letter" />
                                 <RuleLine ok={pwLowerOk} text="At least one lowercase letter" />
                                 <RuleLine ok={pwDigitOk} text="At least one digit" />
