@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     const cleanFullName = sanitizeInput(fullName);
     const cleanUserToken = sanitizeInput(userToken);
 
+    // التحقق من أن الرقم الأكاديمي 8 أرقام فقط
     if (!/^\d{8}$/.test(cleanAcademicId)) {
       return NextResponse.json(
         { message: "Academic ID must be exactly 8 digits.", status: false, type: "academicId" },
@@ -37,22 +38,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // السماح فقط بحروف وأرقام و @ و . في الإيميل
+    const emailRegex = /^[A-Za-z0-9@.]+$/;
     if (!emailRegex.test(cleanEmail)) {
       return NextResponse.json(
-        { message: "Please enter a valid email address.", status: false, type: "email" },
+        { message: "Email can only contain letters, numbers, '@', and '.'", status: false, type: "email" },
         { status: 400 }
       );
     }
 
-    // رفض الباسورد الذي يحتوي على أقل من 8 أحرف
-    if (cleanPassword.length < 8) {
+    // السماح بباسورد 8 حروف فقط بدون زيادة أو نقصان
+    if (cleanPassword.length !== 8) {
       return NextResponse.json(
-        { message: "Password must be at least 8 characters long.", status: false, type: "password" },
+        { message: "Password must be exactly 8 characters long.", status: false, type: "password" },
         { status: 400 }
       );
     }
 
+    // full name تحقق أن الاسم لا يقل عن 3 أحرف
     if (cleanFullName.length < 3) {
       return NextResponse.json(
         { message: "Full name must be at least 3 characters long.", status: false, type: "fullName" },
