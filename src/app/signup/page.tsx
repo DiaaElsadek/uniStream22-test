@@ -400,14 +400,14 @@ export default function SignupPage() {
                             <label htmlFor="fullName" className="block text-gray-300 font-semibold mb-3 text-base">
                                 Full Name
                             </label>
-                            <motion.div 
-                                whileHover={{ scale: 1.02 }} 
+                            <motion.div
+                                whileHover={{ scale: 1.02 }}
                                 whileFocus={{ scale: 1.02 }}
                                 className="relative group"
                             >
-                                <motion.div 
+                                <motion.div
                                     className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
-                                    animate={{ 
+                                    animate={{
                                         scale: fullName ? 1.1 : 1,
                                         color: fullName ? "#a78bfa" : "#9ca3af"
                                     }}
@@ -418,6 +418,8 @@ export default function SignupPage() {
                                 <input
                                     type="text"
                                     id="fullName"
+                                    name="fullName"
+                                    autoComplete="name"
                                     value={fullName}
                                     onChange={(e) => onFullNameChange(e.target.value)}
                                     onBlur={onFullNameBlur}
@@ -425,10 +427,9 @@ export default function SignupPage() {
                                     className="w-full pl-12 pr-4 py-4 rounded-xl bg-gray-800/60 border-2 border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-gray-100 transition-all duration-300 outline-none placeholder-gray-500"
                                     placeholder="Enter your full name (max 20 chars)"
                                 />
-                                {/* Animated Border Effect */}
-                                <motion.div 
+                                <motion.div
                                     className="absolute inset-0 rounded-xl border-2 border-transparent pointer-events-none"
-                                    animate={{ 
+                                    animate={{
                                         boxShadow: fullName ? "0 0 0 2px rgba(139, 92, 246, 0.3)" : "none"
                                     }}
                                     transition={{ duration: 0.3 }}
@@ -457,14 +458,14 @@ export default function SignupPage() {
                             <label htmlFor="academicId" className="block text-gray-300 font-semibold mb-3 text-base">
                                 Academic ID
                             </label>
-                            <motion.div 
-                                whileHover={{ scale: 1.02 }} 
+                            <motion.div
+                                whileHover={{ scale: 1.02 }}
                                 whileFocus={{ scale: 1.02 }}
                                 className="relative group"
                             >
-                                <motion.div 
+                                <motion.div
                                     className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
-                                    animate={{ 
+                                    animate={{
                                         scale: academicId ? 1.1 : 1,
                                         color: academicId ? "#a78bfa" : "#9ca3af"
                                     }}
@@ -476,6 +477,7 @@ export default function SignupPage() {
                                     inputMode="numeric"
                                     pattern="\d*"
                                     autoComplete="on"
+                                    name="academicId"
                                     type="text"
                                     id="academicId"
                                     value={academicId}
@@ -485,10 +487,9 @@ export default function SignupPage() {
                                     className="w-full pl-12 pr-4 py-4 rounded-xl bg-gray-800/60 border-2 border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-gray-100 transition-all duration-300 outline-none placeholder-gray-500"
                                     placeholder="Enter your Academic ID (e.g. 4202XXXX)"
                                 />
-                                {/* Animated Border Effect */}
-                                <motion.div 
+                                <motion.div
                                     className="absolute inset-0 rounded-xl border-2 border-transparent pointer-events-none"
-                                    animate={{ 
+                                    animate={{
                                         boxShadow: academicId ? "0 0 0 2px rgba(139, 92, 246, 0.3)" : "none"
                                     }}
                                     transition={{ duration: 0.3 }}
@@ -525,14 +526,14 @@ export default function SignupPage() {
                             <label htmlFor="email" className="block text-gray-300 font-semibold mb-3 text-base">
                                 Email Address
                             </label>
-                            <motion.div 
-                                whileHover={{ scale: 1.02 }} 
+                            <motion.div
+                                whileHover={{ scale: 1.02 }}
                                 whileFocus={{ scale: 1.02 }}
                                 className="relative group"
                             >
-                                <motion.div 
+                                <motion.div
                                     className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
-                                    animate={{ 
+                                    animate={{
                                         scale: email ? 1.1 : 1,
                                         color: email ? "#a78bfa" : "#9ca3af"
                                     }}
@@ -543,6 +544,8 @@ export default function SignupPage() {
                                 <input
                                     type="email"
                                     id="email"
+                                    name="email"
+                                    autoComplete="username"
                                     value={email}
                                     onChange={(e) => onEmailChange(e.target.value)}
                                     onBlur={onEmailBlur}
@@ -550,10 +553,9 @@ export default function SignupPage() {
                                     className="w-full pl-12 pr-4 py-4 rounded-xl bg-gray-800/60 border-2 border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-gray-100 transition-all duration-300 outline-none placeholder-gray-500"
                                     placeholder="Enter your email"
                                 />
-                                {/* Animated Border Effect */}
-                                <motion.div 
+                                <motion.div
                                     className="absolute inset-0 rounded-xl border-2 border-transparent pointer-events-none"
-                                    animate={{ 
+                                    animate={{
                                         boxShadow: email ? "0 0 0 2px rgba(139, 92, 246, 0.3)" : "none"
                                     }}
                                     transition={{ duration: 0.3 }}
@@ -590,14 +592,14 @@ export default function SignupPage() {
                             <label htmlFor="password" className="block text-gray-300 font-semibold mb-3 text-base">
                                 Password
                             </label>
-                            <motion.div 
-                                whileHover={{ scale: 1.02 }} 
+                            <motion.div
+                                whileHover={{ scale: 1.02 }}
                                 whileFocus={{ scale: 1.02 }}
                                 className="relative group"
                             >
-                                <motion.div 
+                                <motion.div
                                     className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
-                                    animate={{ 
+                                    animate={{
                                         scale: password ? 1.1 : 1,
                                         color: password ? "#a78bfa" : "#9ca3af"
                                     }}
@@ -608,14 +610,15 @@ export default function SignupPage() {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     id="password"
+                                    name="password"
+                                    autoComplete="new-password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                     className="w-full pl-12 pr-12 py-4 rounded-xl bg-gray-800/60 border-2 border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-gray-100 transition-all duration-300 outline-none placeholder-gray-500"
                                     placeholder="Enter your password"
                                 />
-                                
-                                {/* Password Toggle Button */}
+
                                 <motion.button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
@@ -631,17 +634,15 @@ export default function SignupPage() {
                                     </motion.div>
                                 </motion.button>
 
-                                {/* Animated Border Effect */}
-                                <motion.div 
+                                <motion.div
                                     className="absolute inset-0 rounded-xl border-2 border-transparent pointer-events-none"
-                                    animate={{ 
+                                    animate={{
                                         boxShadow: password ? "0 0 0 2px rgba(139, 92, 246, 0.3)" : "none"
                                     }}
                                     transition={{ duration: 0.3 }}
                                 />
                             </motion.div>
 
-                            {/* Enhanced Password Rules */}
                             <div className="mt-4 space-y-2">
                                 <RuleLine ok={pwLenOk} text="At least 8 characters" />
                                 <RuleLine ok={pwUpperOk} text="At least one uppercase letter" />
@@ -664,7 +665,7 @@ export default function SignupPage() {
                             </AnimatePresence>
                         </motion.div>
 
-                        {/* Enhanced Submit Button */}
+                        {/* Submit Button (unchanged) */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -673,19 +674,17 @@ export default function SignupPage() {
                             <motion.button
                                 type="submit"
                                 disabled={loading || !formValid}
-                                className={`w-full py-4 rounded-xl font-bold text-base relative overflow-hidden ${
-                                    loading || !formValid
+                                className={`w-full py-4 rounded-xl font-bold text-base relative overflow-hidden ${loading || !formValid
                                         ? "bg-gray-700 text-gray-400 cursor-not-allowed"
                                         : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl"
-                                } transition-all duration-300`}
-                                whileHover={!loading && formValid ? { 
+                                    } transition-all duration-300`}
+                                whileHover={!loading && formValid ? {
                                     scale: 1.02,
                                 } : {}}
                                 whileTap={!loading && formValid ? { scale: 0.98 } : {}}
                                 onHoverStart={() => setIsHovered(true)}
                                 onHoverEnd={() => setIsHovered(false)}
                             >
-                                {/* Loading Animation */}
                                 {loading && (
                                     <motion.div
                                         initial={{ opacity: 0 }}
@@ -714,9 +713,8 @@ export default function SignupPage() {
                                     </motion.div>
                                 )}
 
-                                {/* Button Text */}
                                 <motion.span
-                                    animate={{ 
+                                    animate={{
                                         opacity: loading ? 0 : 1,
                                         y: loading ? 10 : 0
                                     }}
@@ -735,7 +733,6 @@ export default function SignupPage() {
                                     )}
                                 </motion.span>
 
-                                {/* Shimmer Effect on Hover */}
                                 {!loading && formValid && (
                                     <motion.div
                                         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
@@ -778,7 +775,7 @@ export default function SignupPage() {
 // Enhanced RuleLine Component
 function RuleLine({ ok, text }: { ok: boolean; text: string }) {
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-3"
@@ -786,11 +783,10 @@ function RuleLine({ ok, text }: { ok: boolean; text: string }) {
             <motion.div
                 animate={ok ? { scale: [1, 1.2, 1] } : {}}
                 transition={{ duration: 0.3 }}
-                className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                    ok
+                className={`w-5 h-5 rounded-full flex items-center justify-center ${ok
                         ? "bg-green-500/20 text-green-400 border border-green-500/30"
                         : "bg-gray-700/50 text-gray-500 border border-gray-600/30"
-                }`}
+                    }`}
             >
                 {ok ? (
                     <CheckIcon className="w-3 h-3" />
